@@ -24,9 +24,14 @@ def language(cookie):
             for x in pra.find_all('form',{'method':'post'}):
                 if 'Bahasa Indonesia' in str(x):
                     bahasa = {
-                        "fb_dtsg" : re.search('name="fb_dtsg" value="(.*?)"',str(req.text)).group(1),
-                        "jazoest" : re.search('name="jazoest" value="(.*?)"', str(req.text)).group(1),
-                        "submit"  : "Bahasa Indonesia"}
+                        "fb_dtsg": re.search(
+                            'name="fb_dtsg" value="(.*?)"', req.text
+                        )[1],
+                        "jazoest": re.search(
+                            'name="jazoest" value="(.*?)"', req.text
+                        )[1],
+                        "submit": "Bahasa Indonesia",
+                    }
                     url = 'https://mbasic.facebook.com' + x['action']
                     exec = xyz.post(url,data=bahasa,cookies=cookie)
     except Exception as e:pass
@@ -58,8 +63,14 @@ class login:
             self.token_eaag = open('login/token_eaag.json','r').read()
             self.token_eaab = open('login/token_eaab.json','r').read()
             language(self.cookie)
-            req1 = self.xyz.get('https://graph.facebook.com/me?fields=name,id&access_token=%s'%(self.token_eaag),cookies=self.cookie).json()['name']
-            req2 = self.xyz.get('https://graph.facebook.com/me/friends?fields=summary&limit=0&access_token=%s'%(self.token_eaab),cookies=self.cookie).json()['summary']['total_count']
+            req1 = self.xyz.get(
+                f'https://graph.facebook.com/me?fields=name,id&access_token={self.token_eaag}',
+                cookies=self.cookie,
+            ).json()['name']
+            req2 = self.xyz.get(
+                f'https://graph.facebook.com/me/friends?fields=summary&limit=0&access_token={self.token_eaab}',
+                cookies=self.cookie,
+            ).json()['summary']['total_count']
             clear()
             print('Login Sebagai %s\n'%(req1))
         except Exception as e:
@@ -83,16 +94,14 @@ class login:
     def generate_token_eaag(self,cok):
         url = 'https://business.facebook.com/business_locations'
         req = self.xyz.get(url,cookies={'cookie':cok})
-        tok = re.search('(\["EAAG\w+)', req.text).group(1).replace('["','')
-        return(tok)
+        return re.search('(\["EAAG\w+)', req.text)[1].replace('["', '')
     def generate_token_eaab(self,cok):
         url = 'https://www.facebook.com/adsmanager/manage/campaigns'
         req = self.xyz.get(url,cookies={'cookie':cok})
-        set = re.search('act=(.*?)&nav_source',str(req.content)).group(1)
-        nek = '%s?act=%s&nav_source=no_referrer'%(url,set)
+        set = re.search('act=(.*?)&nav_source',str(req.content))[1]
+        nek = f'{url}?act={set}&nav_source=no_referrer'
         roq = self.xyz.get(nek,cookies={'cookie':cok})
-        tok = re.search('accessToken="(.*?)"',str(roq.content)).group(1)
-        return(tok)
+        return re.search('accessToken="(.*?)"',str(roq.content))[1]
 
 class main_dump:
     # --> Trigger
@@ -138,33 +147,39 @@ class main_dump:
         global tamp1
         self.tamp1 = []
         tamp1 = self.tamp1
-        url = 'https://graph.facebook.com/me/posts?fields=id,created_time,privacy&limit=10000&access_token='+self.token_eaag
+        url = f'https://graph.facebook.com/me/posts?fields=id,created_time,privacy&limit=10000&access_token={self.token_eaag}'
         req = self.xyz.get(url,cookies=self.cookie).json()
-        if self.privacy == 'ALL': # Semua Privasi
-            for x in req['data']: self.tamp1.append(x)
-        elif self.privacy == 'EVERYONE': # Publik
-            for x in req['data']:
-                if x['privacy']['value'] == 'EVERYONE': self.tamp1.append(x)
-        elif self.privacy == 'ALL_FRIENDS': # Teman
-            for x in req['data']:
-                if x['privacy']['value'] == 'ALL_FRIENDS': self.tamp1.append(x)
-        elif self.privacy == 'SELF': # Hanya Saya
-            for x in req['data']:
-                if x['privacy']['value'] == 'SELF': self.tamp1.append(x)
-        print('Mendapatkan %s Postingan'%(str(len(tamp1))))
+        self.tamp1.extend(
+            x
+            for x in req['data']
+            if self.privacy != 'ALL'
+            and self.privacy == 'ALL_FRIENDS'
+            and x['privacy']['value'] == 'ALL_FRIENDS'
+            or self.privacy != 'ALL'
+            and self.privacy != 'ALL_FRIENDS'
+            and self.privacy == 'EVERYONE'
+            and x['privacy']['value'] == 'EVERYONE'
+            or self.privacy != 'ALL'
+            and self.privacy != 'ALL_FRIENDS'
+            and self.privacy != 'EVERYONE'
+            and self.privacy == 'SELF'
+            and x['privacy']['value'] == 'SELF'
+            or self.privacy == 'ALL'
+        )
+        print(f'Mendapatkan {len(tamp1)} Postingan')
     # --> Dump Friendlist
     def friendlist(self):
         self.tamp3 = []
-        url = 'https://graph.facebook.com/me/friends?fields=id,name&limit=5000&access_token=%s'%(self.token_eaab)
+        url = f'https://graph.facebook.com/me/friends?fields=id,name&limit=5000&access_token={self.token_eaab}'
         req = self.xyz.get(url,cookies=self.cookie).json()
         try:
             for y in req['data']:
                 try:
-                    if y['id']+'|'+y['name'] in self.tamp3: pass
-                    else:self.tamp3.append(y['id']+'|'+y['name'])
+                    if y['id'] + '|' + y['name'] not in self.tamp3:
+                        self.tamp3.append(y['id']+'|'+y['name'])
                 except Exception as e:continue
         except Exception as e:pass
-        print('Mendeteksi %s Teman'%(str(len(self.tamp3))))
+        print(f'Mendeteksi {len(self.tamp3)} Teman')
     # --> Sortir ID
     def sortir(self):
         global tamp3
@@ -184,7 +199,7 @@ class dump_react:
         self.token_eaab  = open('login/token_eaab.json','r').read()
         self.cookie      = {'cookie':open('login/cookie.json','r').read()}
         for x in tamp1:
-            url = 'https://graph.facebook.com/%s/reactions?limit=10000&access_token=%s'%(x['id'],self.token_eaab)
+            url = f"https://graph.facebook.com/{x['id']}/reactions?limit=10000&access_token={self.token_eaab}"
             self.main_dump(url)
         print('')
     def main_dump(self,url):
@@ -192,10 +207,10 @@ class dump_react:
         try:
             for y in req['data']:
                 try:
-                    if y['id']+'|'+y['name'] in self.tamp2: pass
-                    else:
+                    if y['id'] + '|' + y['name'] not in self.tamp2:
                         self.tamp2.append(y['id']+'|'+y['name'])
-                        print('\rMendeteksi %s Interaksi'%(str(len(tamp2))),end='');sys.stdout.flush()
+                        print('\rMendeteksi %s Interaksi'%(str(len(tamp2))),end='')
+                        sys.stdout.flush()
                 except Exception as e:continue
         except Exception as e:pass
 
@@ -209,7 +224,7 @@ class dump_comment:
         self.token_eaab  = open('login/token_eaab.json','r').read()
         self.cookie      = {'cookie':open('login/cookie.json','r').read()}
         for x in tamp1:
-            url = 'https://graph.facebook.com/%s/comments?limit=10000&access_token=%s'%(x['id'],self.token_eaab)
+            url = f"https://graph.facebook.com/{x['id']}/comments?limit=10000&access_token={self.token_eaab}"
             self.main_dump(url)
         print('')
     def main_dump(self,url):
@@ -217,10 +232,10 @@ class dump_comment:
         try:
             for y in req['data']:
                 try:
-                    if y['from']['id']+'|'+y['from']['name'] in self.tamp2: pass
-                    else:
+                    if y['from']['id'] + '|' + y['from']['name'] not in self.tamp2:
                         self.tamp2.append(y['from']['id']+'|'+y['from']['name'])
-                        print('\rMendeteksi %s Interaksi'%(str(len(tamp2))),end='');sys.stdout.flush()
+                        print('\rMendeteksi %s Interaksi'%(str(len(tamp2))),end='')
+                        sys.stdout.flush()
                 except Exception as e:continue
         except Exception as e:pass
 
@@ -234,10 +249,10 @@ class dump_react_comment:
         self.token_eaab  = open('login/token_eaab.json','r').read()
         self.cookie      = {'cookie':open('login/cookie.json','r').read()}
         for x in tamp1:
-            url = 'https://graph.facebook.com/%s/reactions?limit=10000&access_token=%s'%(x['id'],self.token_eaab)
+            url = f"https://graph.facebook.com/{x['id']}/reactions?limit=10000&access_token={self.token_eaab}"
             self.main_dump1(url)
         for x in tamp1:
-            url = 'https://graph.facebook.com/%s/comments?limit=10000&access_token=%s'%(x['id'],self.token_eaab)
+            url = f"https://graph.facebook.com/{x['id']}/comments?limit=10000&access_token={self.token_eaab}"
             self.main_dump2(url)
         print('')
     def main_dump1(self,url):
@@ -245,10 +260,10 @@ class dump_react_comment:
         try:
             for y in req['data']:
                 try:
-                    if y['id']+'|'+y['name'] in self.tamp2: pass
-                    else:
+                    if y['id'] + '|' + y['name'] not in self.tamp2:
                         self.tamp2.append(y['id']+'|'+y['name'])
-                        print('\rMendeteksi %s Interaksi'%(str(len(tamp2))),end='');sys.stdout.flush()
+                        print('\rMendeteksi %s Interaksi'%(str(len(tamp2))),end='')
+                        sys.stdout.flush()
                 except Exception as e:continue
         except Exception as e:pass
     def main_dump2(self,url):
@@ -256,10 +271,10 @@ class dump_react_comment:
         try:
             for y in req['data']:
                 try:
-                    if y['from']['id']+'|'+y['from']['name'] in self.tamp2: pass
-                    else:
+                    if y['from']['id'] + '|' + y['from']['name'] not in self.tamp2:
                         self.tamp2.append(y['from']['id']+'|'+y['from']['name'])
-                        print('\rMendeteksi %s Interaksi'%(str(len(tamp2))),end='');sys.stdout.flush()
+                        print('\rMendeteksi %s Interaksi'%(str(len(tamp2))),end='')
+                        sys.stdout.flush()
                 except Exception as e:continue
         except Exception as e:pass
 
@@ -270,24 +285,30 @@ class unfriend:
         for fg in tamp3:
             id   = fg.split('|')[0]
             name = fg.split('|')[1]
-            url  = 'https://mbasic.facebook.com/removefriend.php?friend_id=%s'%(id)
+            url = f'https://mbasic.facebook.com/removefriend.php?friend_id={id}'
             self.scrap1(url,id,name)
     def scrap1(self,url,id,name):
         with requests.Session() as xyz:
             req = bs(xyz.get(url,cookies=self.cookie).content,'html.parser')
             fom = req.find('form',{'method':'post'})
             dat = {
-                'fb_dtsg' : re.search('name="fb_dtsg" type="hidden" value="(.*?)"',str(fom)).group(1),
-                'jazoest' : re.search('name="jazoest" type="hidden" value="(.*?)"',str(fom)).group(1),
-                'confirm' : 'Konfirmasi'}
-            nek = 'https://mbasic.facebook.com%s'%(fom['action'])
+                'fb_dtsg': re.search(
+                    'name="fb_dtsg" type="hidden" value="(.*?)"', str(fom)
+                )[1],
+                'jazoest': re.search(
+                    'name="jazoest" type="hidden" value="(.*?)"', str(fom)
+                )[1],
+                'confirm': 'Konfirmasi',
+            }
+            nek = f"https://mbasic.facebook.com{fom['action']}"
             pos = xyz.post(nek,data=dat,cookies=self.cookie)
             if '<Response [200]>' in str(pos):
                 self.loop += 1
                 print('\r[Dihapus] %s | %s          '%(id,name))
             else:
                 print('\r[ Gagal ] %s | %s          '%(id,name))
-            print('\rBerhasil Menghapus %s Teman'%(str(self.loop)),end='');sys.stdout.flush()
+            print('\rBerhasil Menghapus %s Teman'%(str(self.loop)),end='')
+            sys.stdout.flush()
 
 if __name__=='__main__':
     clear()

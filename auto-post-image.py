@@ -24,10 +24,14 @@ def language(cookie):
             for x in pra.find_all('form',{'method':'post'}):
                 if 'Bahasa Indonesia' in str(x):
                     bahasa = {
-                        "fb_dtsg" : re.search('name="fb_dtsg" value="(.*?)"',str(req.text)).group(1),
-                        "jazoest" : re.search('name="jazoest" value="(.*?)"', str(req.text)).group(1),
-                        "submit"  : "Bahasa Indonesia"
-                        }
+                        "fb_dtsg": re.search(
+                            'name="fb_dtsg" value="(.*?)"', req.text
+                        )[1],
+                        "jazoest": re.search(
+                            'name="jazoest" value="(.*?)"', req.text
+                        )[1],
+                        "submit": "Bahasa Indonesia",
+                    }
                     url = 'https://mbasic.facebook.com' + x['action']
                     exec = xyz.post(url,data=bahasa,cookies=cookie)
     except Exception as e:pass
@@ -46,7 +50,7 @@ def clotox(cookie):
             "accept"                    : "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
             "content-type"              : "text/html; charset=utf-8"},
             cookies = {"cookie":cookie})
-        return(re.search('(\["EAAG\w+)', get_tok.text).group(1).replace('["',''))
+        return re.search('(\["EAAG\w+)', get_tok.text)[1].replace('["', '')
 
 ###----------[ MENU UTAMA ]---------- ###
 class main:
@@ -58,7 +62,10 @@ class main:
             self.token  = open('login/token.json','r').read()
             self.cookie = {'cookie':open('login/cookie.json','r').read()}
             language(self.cookie)
-            get  = requests.Session().get('https://graph.facebook.com/me?fields=name,id&access_token=%s'%(self.token),cookies=self.cookie)
+            get = requests.Session().get(
+                f'https://graph.facebook.com/me?fields=name,id&access_token={self.token}',
+                cookies=self.cookie,
+            )
             jsx = json.loads(get.text)
             nama = jsx["name"]
             clear()
@@ -104,7 +111,7 @@ class link_url:
             album = input('Masukkan ID Album : ')
             pesan = input('Tulis Pesan Teks : ')
             jumlah = int(input('Berapa Unggahan Per Foto : '))
-            print('Jumlah Foto Yg Akan Diunggah : %s'%(str(jumlah*len(data_image))))
+            print(f'Jumlah Foto Yg Akan Diunggah : {str(jumlah * len(data_image))}')
             with ThreadPoolExecutor(max_workers=35) as TPE:
                 for gambar in data_image:
                     TPE.submit(ordinal_post_foto,album,pesan,gambar,jumlah,token,cookie)
@@ -122,7 +129,7 @@ class galeri:
             album = input('Masukkan ID Album : ')
             pesan = input('Tulis Pesan Teks : ')
             jumlah = int(input('Berapa Unggahan Per Foto : '))
-            print('Jumlah Foto Yg Akan Diunggah : %s'%(str(jumlah*len(data_image))))
+            print(f'Jumlah Foto Yg Akan Diunggah : {str(jumlah * len(data_image))}')
             with ThreadPoolExecutor(max_workers=35) as TPE:
                 for gambar in data_image:
                     TPE.submit(ordinal_post_foto,album,pesan,gambar,jumlah,token,cookie)
@@ -182,15 +189,15 @@ class myanime:
 class ordinal_post_foto:
     def __init__(self,album,pesan,gambar,jumlah,token,cookie):
         loop = 0
-        for x in range(int(jumlah)):
+        for _ in range(int(jumlah)):
             try:
                 url = f'https://graph.facebook.com/{album}/photos?'
                 data = {
-                    'method' : 'POST',
-                    'message' : pesan + ' ' + str(loop+1),
-                    'url' : gambar,
-                    'access_token' : token
-                    }
+                    'method': 'POST',
+                    'message': f'{pesan} {str(loop + 1)}',
+                    'url': gambar,
+                    'access_token': token,
+                }
                 req = requests.Session().post(url,data=data,cookies=cookie)
                 if 'error' in str(req.json()):
                     loop += 1
@@ -216,15 +223,15 @@ class random_post_foto:
         self.requ()
     def requ(self):
         loop = 0
-        for x in range(int(self.jumla)):
+        for _ in range(int(self.jumla)):
             try:
                 url = f'https://graph.facebook.com/{self.album}/photos?'
                 data = {
-                    'method' : 'POST',
-                    'message' : self.pesan + ' ' + str(loop+1),
-                    'url' : random.choice(data_image),
-                    'access_token' : self.token
-                    }
+                    'method': 'POST',
+                    'message': f'{self.pesan} {str(loop + 1)}',
+                    'url': random.choice(data_image),
+                    'access_token': self.token,
+                }
                 req = self.xyz.post(url,data=data,cookies=self.cookie)
                 if 'error' in str(req.json()):
                     loop += 1

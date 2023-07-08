@@ -29,9 +29,14 @@ def language(cookie):
             for x in pra.find_all('form',{'method':'post'}):
                 if 'Bahasa Indonesia' in str(x):
                     bahasa = {
-                        "fb_dtsg" : re.search('name="fb_dtsg" value="(.*?)"',str(req.text)).group(1),
-                        "jazoest" : re.search('name="jazoest" value="(.*?)"', str(req.text)).group(1),
-                        "submit"  : "Bahasa Indonesia"}
+                        "fb_dtsg": re.search(
+                            'name="fb_dtsg" value="(.*?)"', req.text
+                        )[1],
+                        "jazoest": re.search(
+                            'name="jazoest" value="(.*?)"', req.text
+                        )[1],
+                        "submit": "Bahasa Indonesia",
+                    }
                     url = 'https://mbasic.facebook.com' + x['action']
                     exec = xyz.post(url,data=bahasa,cookies=cookie)
     except Exception as e:pass
@@ -54,11 +59,18 @@ def finish():
 #--> Waktu Saat Komentar Dibuat
 def waktu_kom():
     _bulan_  = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"][datetime.datetime.now().month - 1]
-    _hari_   = {'Sunday':'Minggu','Monday':'Senin','Tuesday':'Selasa','Wednesday':'Rabu','Thursday':'Kamis','Friday':'Jumat','Saturday':'Sabtu'}[str(datetime.datetime.now().strftime("%A"))]
-    hari_ini = ("%s %s %s"%(datetime.datetime.now().day,_bulan_,datetime.datetime.now().year))
+    _hari_ = {
+        'Sunday': 'Minggu',
+        'Monday': 'Senin',
+        'Tuesday': 'Selasa',
+        'Wednesday': 'Rabu',
+        'Thursday': 'Kamis',
+        'Friday': 'Jumat',
+        'Saturday': 'Sabtu',
+    }[datetime.datetime.now().strftime("%A")]
+    hari_ini = f"{datetime.datetime.now().day} {_bulan_} {datetime.datetime.now().year}"
     jam      = datetime.datetime.now().strftime("%X")
-    tem      = ('\n\n%s, %s --> %s'%(_hari_,hari_ini,str(jam).replace(':','.')))
-    return(tem)
+    return '\n\n%s, %s --> %s' % (_hari_, hari_ini, jam.replace(':', '.'))
 
 # --> Login
 class login:
@@ -72,21 +84,24 @@ class login:
             self.cookie     = {'cookie':open('login/cookie.json','r').read()}
             self.token_eaag = open('login/token_eaag.json','r').read()
             language(self.cookie)
-            req       = self.xyz.get('https://graph.facebook.com/me?fields=name,id&access_token=%s'%(self.token_eaag),cookies=self.cookie).json()
+            req = self.xyz.get(
+                f'https://graph.facebook.com/me?fields=name,id&access_token={self.token_eaag}',
+                cookies=self.cookie,
+            ).json()
             nama_akun = req['name']
             id_akun   = req['id']
             clear()
-            print('%sLogin Sebagai %s%s%s'%(P,H,nama_akun,P))
+            print(f'{P}Login Sebagai {H}{nama_akun}{P}')
         except Exception as e:
             self.insert_cookie()
     def insert_cookie(self):
-        print('%sCookie Invalid!%s'%(M,P))
+        print(f'{M}Cookie Invalid!{P}')
         time.sleep(2)
         clear()
-        print('%sApabila Akun A2F On, Pergi Ke'%(P))
+        print(f'{P}Apabila Akun A2F On, Pergi Ke')
         print('https://business.facebook.com/business_locations')
         print('Untuk Memasukkan Kode Autentikasi')
-        ciko = input('%sMasukkan Cookie : %s%s'%(P,H,P))
+        ciko = input(f'{P}Masukkan Cookie : {H}{P}')
         try:self.token_eaag = self.generate_token_eaag(ciko)
         except Exception as e: self.insert_cookie()
         try:os.mkdir("login")
@@ -97,8 +112,7 @@ class login:
     def generate_token_eaag(self,cok):
         url = 'https://business.facebook.com/business_locations'
         req = self.xyz.get(url,cookies={'cookie':cok})
-        tok = re.search('(\["EAAG\w+)', req.text).group(1).replace('["','')
-        return(tok)
+        return re.search('(\["EAAG\w+)', req.text)[1].replace('["', '')
 
 #--> Main Menu
 class menu:
@@ -106,17 +120,17 @@ class menu:
         self.main()
     def main(self):
         print('\n[ Menu ]'%())
-        print('[1] Edit Foto Profil'%())
-        print('[2] Edit Foto Sampul'%())
-        print('[3] PP Guard'%())
-        print('[4] Edit Bio'%())
-        print('[5] Edit Kota'%())
-        print('[6] Edit Website'%())
-        print('[7] Locked Profile'%())
-        print('[0] Logout'%())
+        print('[1] Edit Foto Profil')
+        print('[2] Edit Foto Sampul')
+        print('[3] PP Guard')
+        print('[4] Edit Bio')
+        print('[5] Edit Kota')
+        print('[6] Edit Website')
+        print('[7] Locked Profile')
+        print('[0] Logout')
         x = input('Pilih : ')
         print('')
-        if   x in ['1','01','a']: edit_profile_pic(); menu()
+        if x in ['1','01','a']: edit_profile_pic(); menu()
         elif x in ['2','02','b']: edit_cover_pic(); menu()
         elif x in ['3','03','c']: profile_guard(); menu()
         elif x in ['4','04','d']: update_bio(); menu()
@@ -130,8 +144,8 @@ class menu:
                 print('Good Bye...')
             except Exception :
                 print('Good Bye...')
-        else : 
-            print('%sIsi Yg Benar!%s'%(M,P))
+        else: 
+            print(f'{M}Isi Yg Benar!{P}')
 
 #--> Edit Profile Pict
 class edit_profile_pic:
@@ -149,13 +163,22 @@ class edit_profile_pic:
             req = bs(self.xyz.get(url,cookies=self.cookie).content,'html.parser')
             raq = req.find('form',{'method':'post'})
             dat = {
-                'fb_dtsg' : re.search('name="fb_dtsg" type="hidden" value="(.*?)"',str(raq)).group(1),
-                'jazoest' : re.search('name="jazoest" type="hidden" value="(.*?)"',str(raq)).group(1),
-                'submit'  : 'Simpan'}
+                'fb_dtsg': re.search(
+                    'name="fb_dtsg" type="hidden" value="(.*?)"', str(raq)
+                )[1],
+                'jazoest': re.search(
+                    'name="jazoest" type="hidden" value="(.*?)"', str(raq)
+                )[1],
+                'submit': 'Simpan',
+            }
             fil = {'pic' : fot}
             pos = bs(self.xyz.post(raq['action'],data=dat,files=fil,cookies=self.cookie).content,'html.parser')
             cek = pos.find('title').text
-            if cek == 'Akun Anda dibatasi saat ini' or cek == 'Anda Diblokir Sementara' or cek == 'Kesalahan' :
+            if cek in [
+                'Akun Anda dibatasi saat ini',
+                'Anda Diblokir Sementara',
+                'Kesalahan',
+            ]:
                 print('\n%sGagal Mengganti Foto Profil%s'%(M,P))
             else:
                 print('\n%sBerhasil Mengganti Foto Profil%s'%(H,P))
@@ -178,19 +201,41 @@ class edit_cover_pic:
             req = bs(self.xyz.get(url,cookies=self.cookie).content,'html.parser')
             raq = req.find('form',{'method':'post'})
             dat = {
-                'fb_dtsg'                  : re.search('name="fb_dtsg" type="hidden" value="(.*?)"',str(raq)).group(1),
-                'jazoest'                  : re.search('name="jazoest" type="hidden" value="(.*?)"',str(raq)).group(1),
-                'return_uri'               : re.search('name="return_uri" type="hidden" value="(.*?)"',str(raq)).group(1),
-                'return_uri_error'         : re.search('name="return_uri_error" type="hidden" value="(.*?)"',str(raq)).group(1),
-                'ref'                      : re.search('name="ref" type="hidden" value="(.*?)"',str(raq)).group(1),
-                'csid'                     : re.search('name="csid" type="hidden" value="(.*?)"',str(raq)).group(1),
-                'ctype'                    : re.search('name="ctype" type="hidden" value="(.*?)"',str(raq)).group(1),
-                'profile_edit_logging_ref' : re.search('name="profile_edit_logging_ref" type="hidden" value="(.*?)"',str(raq)).group(1),
-                'submit'                   : 'Unggah'}
+                'fb_dtsg': re.search(
+                    'name="fb_dtsg" type="hidden" value="(.*?)"', str(raq)
+                )[1],
+                'jazoest': re.search(
+                    'name="jazoest" type="hidden" value="(.*?)"', str(raq)
+                )[1],
+                'return_uri': re.search(
+                    'name="return_uri" type="hidden" value="(.*?)"', str(raq)
+                )[1],
+                'return_uri_error': re.search(
+                    'name="return_uri_error" type="hidden" value="(.*?)"', str(raq)
+                )[1],
+                'ref': re.search(
+                    'name="ref" type="hidden" value="(.*?)"', str(raq)
+                )[1],
+                'csid': re.search(
+                    'name="csid" type="hidden" value="(.*?)"', str(raq)
+                )[1],
+                'ctype': re.search(
+                    'name="ctype" type="hidden" value="(.*?)"', str(raq)
+                )[1],
+                'profile_edit_logging_ref': re.search(
+                    'name="profile_edit_logging_ref" type="hidden" value="(.*?)"',
+                    str(raq),
+                )[1],
+                'submit': 'Unggah',
+            }
             fil = {'file1' : fot}
             pos = bs(self.xyz.post('https://mbasic.facebook.com'+raq['action'],data=dat,files=fil,cookies=self.cookie).content,'html.parser')
             cek = pos.find('title').text
-            if cek == 'Akun Anda dibatasi saat ini' or cek == 'Anda Diblokir Sementara' or cek == 'Kesalahan' :
+            if cek in [
+                'Akun Anda dibatasi saat ini',
+                'Anda Diblokir Sementara',
+                'Kesalahan',
+            ]:
                 print('\n%sGagal Mengganti Foto Sampul%s'%(M,P))
             else:
                 print('\n%sBerhasil Mengganti Foto Sampul%s'%(H,P))
@@ -214,8 +259,10 @@ class profile_guard:
         else:
             self.scrap1(False)
     def get_id(self):
-        id = self.xyz.get('https://graph.facebook.com/me?fields=name,id&access_token=%s'%(self.token),cookies=self.cookie).json()['id']
-        return(id)
+        return self.xyz.get(
+            f'https://graph.facebook.com/me?fields=name,id&access_token={self.token}',
+            cookies=self.cookie,
+        ).json()['id']
     def scrap1(self,stat):
         id   = self.get_id()
         var  = {
@@ -236,8 +283,9 @@ class profile_guard:
             'fb_api_req_friendly_name' : 'IsShieldedSetMutation',
             'fb_api_caller_class'      : 'IsShieldedSetMutation'}
         head = {
-            'Content-Type'  : 'application/x-www-form-urlencoded',
-            'Authorization' : 'OAuth %s'%self.token}
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Authorization': f'OAuth {self.token}',
+        }
         url  = 'https://graph.facebook.com/graphql'
         req  = self.xyz.post(url, data=data, headers=head, cookies=self.cookie)
         if '"is_shielded":true' in req.text:
@@ -260,14 +308,23 @@ class update_bio:
             req = bs(self.xyz.get(url,cookies=self.cookie).content,'html.parser')
             raq = req.find('form',{'method':'post'})
             dat = {
-                'fb_dtsg'         : re.search('name="fb_dtsg" type="hidden" value="(.*?)"',str(raq)).group(1),
-                'jazoest'         : re.search('name="jazoest" type="hidden" value="(.*?)"',str(raq)).group(1),
-                'bio'             : self.bio,
-                'publish_to_feed' : True,
-                'submit'          : 'Simpan'}
+                'fb_dtsg': re.search(
+                    'name="fb_dtsg" type="hidden" value="(.*?)"', str(raq)
+                )[1],
+                'jazoest': re.search(
+                    'name="jazoest" type="hidden" value="(.*?)"', str(raq)
+                )[1],
+                'bio': self.bio,
+                'publish_to_feed': True,
+                'submit': 'Simpan',
+            }
             pos = bs(self.xyz.post('https://mbasic.facebook.com'+raq['action'],data=dat,cookies=self.cookie).content,'html.parser')
             cek = pos.find('title').text
-            if cek == 'Akun Anda dibatasi saat ini' or cek == 'Anda Diblokir Sementara' or cek == 'Kesalahan' :
+            if cek in [
+                'Akun Anda dibatasi saat ini',
+                'Anda Diblokir Sementara',
+                'Kesalahan',
+            ]:
                 print('\n%sGagal Mengganti Bio%s'%(M,P))
             else:
                 print('\n%sBerhasil Mengganti Bio%s'%(H,P))
@@ -287,20 +344,29 @@ class edit_kota:
             req = bs(self.xyz.get(url,cookies=self.cookie).content,'html.parser')
             raq = req.find('form',{'method':'post'})
             dat = {
-                'fb_dtsg'    : re.search('name="fb_dtsg" type="hidden" value="(.*?)"',str(raq)).group(1),
-                'jazoest'    : re.search('name="jazoest" type="hidden" value="(.*?)"',str(raq)).group(1),
-                'edit'       : a,
-                'type'       : 'basic',
-                b : kota,
-                'save'       : 'Simpan'}
+                'fb_dtsg': re.search(
+                    'name="fb_dtsg" type="hidden" value="(.*?)"', str(raq)
+                )[1],
+                'jazoest': re.search(
+                    'name="jazoest" type="hidden" value="(.*?)"', str(raq)
+                )[1],
+                'edit': a,
+                'type': 'basic',
+                b: kota,
+                'save': 'Simpan',
+            }
             pos = bs(self.xyz.post('https://mbasic.facebook.com'+raq['action'],data=dat,cookies=self.cookie).content,'html.parser')
             cek = pos.find('title').text
-            if cek == 'Akun Anda dibatasi saat ini' or cek == 'Anda Diblokir Sementara' or cek == 'Kesalahan' :
-                print('%sGagal Mengganti Kota%s'%(M,P))
+            if cek in [
+                'Akun Anda dibatasi saat ini',
+                'Anda Diblokir Sementara',
+                'Kesalahan',
+            ]:
+                print(f'{M}Gagal Mengganti Kota{P}')
             else:
-                print('%sBerhasil Mengganti Kota%s'%(H,P))
+                print(f'{H}Berhasil Mengganti Kota{P}')
         except Exception as e:
-            print('%sGagal Mengganti Kota%s'%(M,P))
+            print(f'{M}Gagal Mengganti Kota{P}')
 
 #--> Edit Website
 class edit_website:
@@ -314,16 +380,25 @@ class edit_website:
             req = bs(self.xyz.get(url,cookies=self.cookie).content,'html.parser')
             raq = req.find('form',{'method':'post'})
             dat = {
-                'fb_dtsg'    : re.search('name="fb_dtsg" type="hidden" value="(.*?)"',str(raq)).group(1),
-                'jazoest'    : re.search('name="jazoest" type="hidden" value="(.*?)"',str(raq)).group(1),
-                'type'       : 'contact',
-                'edit'       : 'website',
+                'fb_dtsg': re.search(
+                    'name="fb_dtsg" type="hidden" value="(.*?)"', str(raq)
+                )[1],
+                'jazoest': re.search(
+                    'name="jazoest" type="hidden" value="(.*?)"', str(raq)
+                )[1],
+                'type': 'contact',
+                'edit': 'website',
                 'add_website': '1',
-                'new_info'   : self.web,
-                'save'       : 'Tambahkan'}
+                'new_info': self.web,
+                'save': 'Tambahkan',
+            }
             pos = bs(self.xyz.post('https://mbasic.facebook.com'+raq['action'],data=dat,cookies=self.cookie).content,'html.parser')
             cek = pos.find('title').text
-            if cek == 'Akun Anda dibatasi saat ini' or cek == 'Anda Diblokir Sementara' or cek == 'Kesalahan' :
+            if cek in [
+                'Akun Anda dibatasi saat ini',
+                'Anda Diblokir Sementara',
+                'Kesalahan',
+            ]:
                 print('\n%sGagal Mengganti Website%s'%(M,P))
             else:
                 print('\n%sBerhasil Mengganti Website%s'%(H,P))
@@ -336,14 +411,14 @@ class lock_profile:
         self.xyz = requests.Session()
         self.cookie = {'cookie':open('login/cookie.json','r').read()}
         self.headget = {'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7','Accept-Encoding':'gzip, deflate','Accept-Language':'en-US,en;q=0.9','Cache-Control':'max-age=0','Pragma':'akamai-x-cache-on, akamai-x-cache-remote-on, akamai-x-check-cacheable, akamai-x-get-cache-key, akamai-x-get-extracted-values, akamai-x-get-ssl-client-session-id, akamai-x-get-true-cache-key, akamai-x-serial-no, akamai-x-get-request-id,akamai-x-get-nonces,akamai-x-get-client-ip,akamai-x-feo-trace','Sec-Ch-Ua':'','Sec-Ch-Ua-Full-Version-List':'','Sec-Ch-Ua-Mobile':'?0','Sec-Ch-Ua-Platform':'','Sec-Ch-Ua-Platform-Version':'','Sec-Fetch-Dest':'document','Sec-Fetch-Mode':'navigate','Sec-Fetch-Site':'same-origin','Sec-Fetch-User':'?1','Upgrade-Insecure-Requests':'1','User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36'}
-        self.id = re.search('c_user=(.*?);',self.cookie['cookie']).group(1)
+        self.id = re.search('c_user=(.*?);',self.cookie['cookie'])[1]
         self.cek_country()
     def cek_country(self):
         r = requests.Session()
         try:
             req = r.get('http://ip-api.com/json/').json()
             con = req['country']
-            if con=='Bangladesh' or con=='India':
+            if con in ['Bangladesh', 'India']:
                 self.choose()
             else:
                 print('%sAnda Harus Menggunakan VPN Bangladesh/India\nUntuk Mengaktifkan Locked Profile!%s'%(M,P))
@@ -363,14 +438,14 @@ class lock_profile:
     def execute(self,stat):
         try:
             req = bs(self.xyz.get(f'https://www.facebook.com/{self.id}',headers=self.headget,cookies=self.cookie,allow_redirects=True).content,'html.parser')
-            haste = re.search('"haste_session":"(.*?)",',str(req)).group(1)
-            rev = re.search('{"rev":(.*?)}',str(req)).group(1)
-            hsi = re.search('"hsi":"(.*?)",',str(req)).group(1)
-            dtsg = re.search('"DTSGInitialData",\[\],{"token":"(.*?)"',str(req)).group(1)
-            jazoest = re.search('&jazoest=(.*?)",',str(req)).group(1)
-            lsd = re.search('"LSD",\[\],{"token":"(.*?)"',str(req)).group(1)
-            spinr = re.search('"__spin_r":(.*?),',str(req)).group(1)
-            spint = re.search('"__spin_t":(.*?),',str(req)).group(1)
+            haste = re.search('"haste_session":"(.*?)",',str(req))[1]
+            rev = re.search('{"rev":(.*?)}',str(req))[1]
+            hsi = re.search('"hsi":"(.*?)",',str(req))[1]
+            dtsg = re.search('"DTSGInitialData",\[\],{"token":"(.*?)"',str(req))[1]
+            jazoest = re.search('&jazoest=(.*?)",',str(req))[1]
+            lsd = re.search('"LSD",\[\],{"token":"(.*?)"',str(req))[1]
+            spinr = re.search('"__spin_r":(.*?),',str(req))[1]
+            spint = re.search('"__spin_t":(.*?),',str(req))[1]
             var = {"enable":stat}
             data = {'av':self.id,'__user':self.id,'__a':'1','__hs':haste,'dpr':'1.5','__ccg':'EXCELLENT','__rev':rev,'__hsi':hsi,'__comet_req':'15','fb_dtsg': dtsg,'jazoest': jazoest,'lsd': lsd,'__spin_b':'trunk','__spin_r':spinr,'__spin_t':spint,'fb_api_caller_class':'RelayModern','fb_api_req_friendly_name':'WemPrivateSharingMutation','variables':json.dumps(var),'server_timestamps':'true','doc_id':'5507005232662559'}
             headpos = {'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,image/jpeg,image/jpg,image/png,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7','Accept-Encoding':'gzip, deflate','Accept-Language':'en-US,en;q=0.9','Content-Type':'application/x-www-form-urlencoded','Pragma':'akamai-x-cache-on, akamai-x-cache-remote-on, akamai-x-check-cacheable, akamai-x-get-cache-key, akamai-x-get-extracted-values, akamai-x-get-ssl-client-session-id, akamai-x-get-true-cache-key, akamai-x-serial-no, akamai-x-get-request-id,akamai-x-get-nonces,akamai-x-get-client-ip,akamai-x-feo-trace','Origin':'https://www.facebook.com','Referer':'https://www.facebook.com/','Sec-Ch-Ua':'','Sec-Ch-Ua-Full-Version-List':'','Sec-Ch-Ua-Mobile':'?0','Sec-Ch-Ua-Platform':'','Sec-Ch-Ua-Platform-Version':'','Sec-Fetch-Dest':'empty','Sec-Fetch-Mode':'cors','Sec-Fetch-Site':'same-origin','Sec-Fetch-User':'?1','Upgrade-Insecure-Requests':'1','User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36','X-Fb-Friendly-Name':'WemPrivateSharingMutation','X-Fb-Lsd':lsd}
