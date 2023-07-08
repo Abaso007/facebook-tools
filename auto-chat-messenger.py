@@ -24,9 +24,14 @@ def language(cookie):
             for x in pra.find_all('form',{'method':'post'}):
                 if 'Bahasa Indonesia' in str(x):
                     bahasa = {
-                        "fb_dtsg" : re.search('name="fb_dtsg" value="(.*?)"',str(req.text)).group(1),
-                        "jazoest" : re.search('name="jazoest" value="(.*?)"', str(req.text)).group(1),
-                        "submit"  : "Bahasa Indonesia"}
+                        "fb_dtsg": re.search(
+                            'name="fb_dtsg" value="(.*?)"', req.text
+                        )[1],
+                        "jazoest": re.search(
+                            'name="jazoest" value="(.*?)"', req.text
+                        )[1],
+                        "submit": "Bahasa Indonesia",
+                    }
                     url = 'https://mbasic.facebook.com' + x['action']
                     exec = xyz.post(url,data=bahasa,cookies=cookie)
     except Exception as e:pass
@@ -56,7 +61,10 @@ class main:
             self.token  = open('login/token.json','r').read()
             self.cookie = {'cookie':open('login/cookie.json','r').read()}
             language(self.cookie)
-            get  = requests.Session().get('https://graph.facebook.com/me?fields=name,id&access_token=%s'%(self.token),cookies=self.cookie)
+            get = requests.Session().get(
+                f'https://graph.facebook.com/me?fields=name,id&access_token={self.token}',
+                cookies=self.cookie,
+            )
             jsx = json.loads(get.text)
             nama = jsx["name"]
             clear()
@@ -84,8 +92,7 @@ class main:
         try:
             url = 'https://business.facebook.com/business_locations'
             req = self.xyz.get(url,cookies={'cookie':cok})
-            tok = re.search('(\["EAAG\w+)', req.text).group(1).replace('["','')
-            return(tok)
+            return re.search('(\["EAAG\w+)', req.text)[1].replace('["', '')
         except Exception as e:exit(main())
 
 class auto_chat_messenger:
@@ -109,8 +116,7 @@ class auto_chat_messenger:
         try:
             url = 'https://business.facebook.com/business_locations'
             req = self.xyz.get(url,cookies=self.cookie)
-            tok = re.search('(\["EAAG\w+)', req.text).group(1).replace('["','')
-            return(tok)
+            return re.search('(\["EAAG\w+)', req.text)[1].replace('["', '')
         except Exception as e:exit('\nCookies Invalid\n')
 
     # --> Main Menu Chat
@@ -128,9 +134,17 @@ class auto_chat_messenger:
             print('[3] Pilih Target Dari Daftar Teman')
             xb = input('Pilih : ')
             print('')
-            if   xb in ['1','01','a']: self.manual_input(); self.tulis_chat(); self.jumlah_chat(); self.kalkulasi(); self.sortir()
+            if xb in ['1','01','a']: self.manual_input(); self.tulis_chat(); self.jumlah_chat(); self.kalkulasi(); self.sortir()
             elif xb in ['2','02','b']: self.choice_input_scrap('https://mbasic.facebook.com/messages/read'); self.pilih_riwayat_scrap('Dapunta'); self.tulis_chat(); self.jumlah_chat(); self.kalkulasi(); self.sortir()
-            elif xb in ['3','03','c']: self.choice_input_graph('https://graph.facebook.com/me?fields=friends.fields(id,name)&limit=5000&access_token='+self.token); self.pilih_riwayat_graph('Dapunta'); self.tulis_chat(); self.jumlah_chat(); self.kalkulasi(); self.sortir()
+            elif xb in ['3','03','c']:
+                self.choice_input_graph(
+                    f'https://graph.facebook.com/me?fields=friends.fields(id,name)&limit=5000&access_token={self.token}'
+                )
+                self.pilih_riwayat_graph('Dapunta')
+                self.tulis_chat()
+                self.jumlah_chat()
+                self.kalkulasi()
+                self.sortir()
             else:exit('\nIsi Yang Benar !\n')
         elif xa in ['2','02','b']:
             print('[ Menu Spam Chat Otomatis ]')
@@ -138,8 +152,16 @@ class auto_chat_messenger:
             print('[2] Spam Chat Semua Daftar Teman')
             xc = input('Pilih : ')
             print('')
-            if   xc in ['1','01','a']: self.choice_input_scrap('https://mbasic.facebook.com/messages/read'); self.pilih_riwayat_scrap('SuciMHR'); self.tulis_chat(); self.jumlah_chat(); self.kalkulasi(); self.sortir()
-            elif xc in ['2','02','b']: self.choice_input_graph('https://graph.facebook.com/me?fields=friends.fields(id,name)&limit=5000&access_token='+self.token); self.pilih_riwayat_graph('SuciMHR'); self.tulis_chat(); self.jumlah_chat(); self.kalkulasi(); self.sortir()
+            if xc in ['1','01','a']: self.choice_input_scrap('https://mbasic.facebook.com/messages/read'); self.pilih_riwayat_scrap('SuciMHR'); self.tulis_chat(); self.jumlah_chat(); self.kalkulasi(); self.sortir()
+            elif xc in ['2','02','b']:
+                self.choice_input_graph(
+                    f'https://graph.facebook.com/me?fields=friends.fields(id,name)&limit=5000&access_token={self.token}'
+                )
+                self.pilih_riwayat_graph('SuciMHR')
+                self.tulis_chat()
+                self.jumlah_chat()
+                self.kalkulasi()
+                self.sortir()
             else:exit('\nIsi Yang Benar !\n')
         elif xa in ['3','03','c']:
             print('[ Menu Hapus Chat ]')
@@ -169,11 +191,10 @@ class auto_chat_messenger:
             for x in req.find_all('h3'):
                 try:
                     y = x.find('a',href=True)
-                    if str(y) == 'None': pass
-                    else:
-                        z = re.search('tid=(.*?)&amp',str(y)).group(1).split('.')[2].split('%')[0]
+                    if str(y) != 'None':
+                        z = re.search('tid=(.*?)&amp',str(y))[1].split('.')[2].split('%')[0]
                         self.for_loop += 1
-                        print('[%s] %s'%(str(self.for_loop),y.text[:30]))
+                        print(f'[{self.for_loop}] {y.text[:30]}')
                         self.all_history.append(z)
                         self.datapend.update({str(self.for_loop):z})
                 except Exception as e:pass
@@ -202,7 +223,7 @@ class auto_chat_messenger:
             for x in req['friends']['data']:
                 try:
                     self.for_loop += 1
-                    print('[%s] %s'%(str(self.for_loop),x['name'][:30]))
+                    print(f"[{self.for_loop}] {x['name'][:30]}")
                     self.all_history.append(x['id'])
                     self.datapend.update({str(self.for_loop):x['id']})
                 except Exception as e:pass
@@ -236,9 +257,9 @@ class auto_chat_messenger:
         else:exit('\nIsi Yang Benar !\n')
     def kalkulasi(self):
         print('\n[ Kalkulasi ]')
-        print('Jenis Chat            : %s'%(str(len(self.listchat))))
-        print('Jumlah Penerima       : %s'%(str(len(self.tararget))))
-        print('Jumlah Kelipatan Chat : %s'%(str(int(self.jc))))
+        print(f'Jenis Chat            : {len(self.listchat)}')
+        print(f'Jumlah Penerima       : {len(self.tararget)}')
+        print(f'Jumlah Kelipatan Chat : {int(self.jc)}')
         print('Total %s Chat Akan Dikirim\n'%(str(len(self.listchat)*len(self.tararget)*int(self.jc))))
 
     # --> Sortir Chat & Target
@@ -248,7 +269,7 @@ class auto_chat_messenger:
                 self.perorangan_berhasil = 0
                 self.perorangan_gagal    = 0
                 for y in self.listchat:
-                    for s in range(int(self.jc)):
+                    for _ in range(int(self.jc)):
                         self.exec(x,y)
                 try:
                     print('\rSpam Chat %s                      '%(self.nama[:20]))
@@ -260,7 +281,7 @@ class auto_chat_messenger:
             for x in self.tararget:
                 self.perorangan_berhasil = 0
                 self.perorangan_gagal    = 0
-                for s in range(int(self.jc)):
+                for _ in range(int(self.jc)):
                     for y in self.listchat:
                         self.exec(x,y)
                 try:
@@ -272,53 +293,72 @@ class auto_chat_messenger:
 
     # --> Requests Post Message
     def exec(self,id,cet):
-        url = 'https://mbasic.facebook.com/messages/thread/'+id
+        url = f'https://mbasic.facebook.com/messages/thread/{id}'
         try:
             req = bs(self.xyz.get(url,cookies=self.cookie).content,'html.parser')
             fom = req.find('form',{'method':'post'})
             try:
                 data = {
-                    'fb_dtsg'      : re.search('name="fb_dtsg" type="hidden" value="(.*?)"',str(fom)).group(1),
-                    'jazoest'      : re.search('name="jazoest" type="hidden" value="(.*?)"',str(fom)).group(1),
-                    'tids'         : re.search('name="tids" type="hidden" value="(.*?)"',   str(fom)).group(1),
-                    'csid'         : re.search('name="csid" type="hidden" value="(.*?)"'   ,str(fom)).group(1),
-                    'cver'         : 'legacy',
-                    'ids[%s]'%(id) : id,
-                    'wwwupp'       : 'C3',
-                    'platform_xmd' : ''}
+                    'fb_dtsg': re.search(
+                        'name="fb_dtsg" type="hidden" value="(.*?)"', str(fom)
+                    )[1],
+                    'jazoest': re.search(
+                        'name="jazoest" type="hidden" value="(.*?)"', str(fom)
+                    )[1],
+                    'tids': re.search(
+                        'name="tids" type="hidden" value="(.*?)"', str(fom)
+                    )[1],
+                    'csid': re.search(
+                        'name="csid" type="hidden" value="(.*?)"', str(fom)
+                    )[1],
+                    'cver': 'legacy',
+                    f'ids[{id}]': id,
+                    'wwwupp': 'C3',
+                    'platform_xmd': '',
+                }
             except Exception as e:
                 data = {
-                    'fb_dtsg'      : re.search('name="fb_dtsg" type="hidden" value="(.*?)"',str(fom)).group(1),
-                    'jazoest'      : re.search('name="jazoest" type="hidden" value="(.*?)"',str(fom)).group(1),
-                    'ids[%s]'%(id) : id}
-            data.update({'body':cet,'send':'Kirim'})
+                    'fb_dtsg': re.search(
+                        'name="fb_dtsg" type="hidden" value="(.*?)"', str(fom)
+                    )[1],
+                    'jazoest': re.search(
+                        'name="jazoest" type="hidden" value="(.*?)"', str(fom)
+                    )[1],
+                    f'ids[{id}]': id,
+                }
+            data |= {'body':cet,'send':'Kirim'}
             nek = 'https://mbasic.facebook.com' + fom['action']
             cuy = bs(self.xyz.post(nek,data=data,cookies=self.cookie).content,'html.parser').find('title').text
             if cuy == 'Kesalahan':
                 self.gagal += 1
                 self.perorangan_gagal += 1
-                print('\r[Proses] [Berhasil:%s] [Gagal:%s]'%(str(self.berhasil),str(self.gagal)),end='');sys.stdout.flush()
             else:
                 self.berhasil += 1
                 self.perorangan_berhasil += 1
                 self.nama = cuy
-                print('\r[Proses] [Berhasil:%s] [Gagal:%s]'%(str(self.berhasil),str(self.gagal)),end='');sys.stdout.flush()
+            print('\r[Proses] [Berhasil:%s] [Gagal:%s]'%(str(self.berhasil),str(self.gagal)),end='')
+            sys.stdout.flush()
         except Exception as e:pass
 
     # --> Delete Chat
     def sortir_delete(self):
         self.delchat = 0
         for id in self.tararget:
-            url = 'https://mbasic.facebook.com/messages/thread/'+id
+            url = f'https://mbasic.facebook.com/messages/thread/{id}'
             self.delete1(url)
     def delete1(self,url):
         try:
             req = bs(self.xyz.get(url,cookies=self.cookie).content,'html.parser')
             fom = req.find_all('form',{'method':'post'})[1]
             data = {
-                'fb_dtsg'      : re.search('name="fb_dtsg" type="hidden" value="(.*?)"',str(fom)).group(1),
-                'jazoest'      : re.search('name="jazoest" type="hidden" value="(.*?)"',str(fom)).group(1),
-                'delete'       : 'Hapus'}
+                'fb_dtsg': re.search(
+                    'name="fb_dtsg" type="hidden" value="(.*?)"', str(fom)
+                )[1],
+                'jazoest': re.search(
+                    'name="jazoest" type="hidden" value="(.*?)"', str(fom)
+                )[1],
+                'delete': 'Hapus',
+            }
             nek = 'https://mbasic.facebook.com' + fom['action']
             self.delete2(nek,data)
         except Exception as e:pass
@@ -326,12 +366,13 @@ class auto_chat_messenger:
         try:
             req = bs(self.xyz.post(url,data=data,cookies=self.cookie).content,'html.parser')
             got = req.find('a',string='Hapus')['href']
-            nok = 'https://mbasic.facebook.com'+got
+            nok = f'https://mbasic.facebook.com{got}'
             roq = bs(self.xyz.get(nok,cookies=self.cookie).content,'html.parser')
             self.delchat += 1
         except Exception as e:
             pass
-        print('\rBerhasil Menghapus %s Chat'%(str(self.delchat)),end='');sys.stdout.flush()
+        print('\rBerhasil Menghapus %s Chat'%(str(self.delchat)),end='')
+        sys.stdout.flush()
 
 if __name__=='__main__':
     clear()

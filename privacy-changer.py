@@ -29,9 +29,14 @@ def language(cookie):
             for x in pra.find_all('form',{'method':'post'}):
                 if 'Bahasa Indonesia' in str(x):
                     bahasa = {
-                        "fb_dtsg" : re.search('name="fb_dtsg" value="(.*?)"',str(req.text)).group(1),
-                        "jazoest" : re.search('name="jazoest" value="(.*?)"', str(req.text)).group(1),
-                        "submit"  : "Bahasa Indonesia"}
+                        "fb_dtsg": re.search(
+                            'name="fb_dtsg" value="(.*?)"', req.text
+                        )[1],
+                        "jazoest": re.search(
+                            'name="jazoest" value="(.*?)"', req.text
+                        )[1],
+                        "submit": "Bahasa Indonesia",
+                    }
                     url = 'https://mbasic.facebook.com' + x['action']
                     exec = xyz.post(url,data=bahasa,cookies=cookie)
     except Exception as e:pass
@@ -63,8 +68,14 @@ class login:
             self.token_eaag = open('login/token_eaag.json','r').read()
             self.token_eaab = open('login/token_eaab.json','r').read()
             language(self.cookie)
-            req1 = self.xyz.get('https://graph.facebook.com/me?fields=name,id&access_token=%s'%(self.token_eaag),cookies=self.cookie).json()['name']
-            req2 = self.xyz.get('https://graph.facebook.com/me/friends?fields=summary&limit=0&access_token=%s'%(self.token_eaab),cookies=self.cookie).json()['summary']['total_count']
+            req1 = self.xyz.get(
+                f'https://graph.facebook.com/me?fields=name,id&access_token={self.token_eaag}',
+                cookies=self.cookie,
+            ).json()['name']
+            req2 = self.xyz.get(
+                f'https://graph.facebook.com/me/friends?fields=summary&limit=0&access_token={self.token_eaab}',
+                cookies=self.cookie,
+            ).json()['summary']['total_count']
             clear()
             print('%sHalo %s%s%s, Selamat Datang !\n'%(P,H,req1,P))
         except Exception as e:
@@ -73,10 +84,10 @@ class login:
         print('\n%sCookie Invalid!%s'%(M,P))
         time.sleep(2)
         clear()
-        print('%sApabila Akun A2F On, Pergi Ke'%(P))
+        print(f'{P}Apabila Akun A2F On, Pergi Ke')
         print('https://business.facebook.com/business_locations')
         print('Untuk Memasukkan Kode Autentikasi')
-        ciko = input('%sMasukkan Cookie : %s%s'%(P,H,P))
+        ciko = input(f'{P}Masukkan Cookie : {H}{P}')
         try:
             self.token_eaag = self.generate_token_eaag(ciko)
             self.token_eaab = self.generate_token_eaab(ciko)
@@ -91,38 +102,35 @@ class login:
     def generate_token_eaag(self,cok):
         url = 'https://business.facebook.com/business_locations'
         req = self.xyz.get(url,cookies={'cookie':cok})
-        tok = re.search('(\["EAAG\w+)', req.text).group(1).replace('["','')
-        return(tok)
+        return re.search('(\["EAAG\w+)', req.text)[1].replace('["', '')
     def generate_token_eaab(self,cok):
         url = 'https://www.facebook.com/adsmanager/manage/campaigns'
         req = self.xyz.get(url,cookies={'cookie':cok})
-        set = re.search('act=(.*?)&nav_source',str(req.content)).group(1)
-        nek = '%s?act=%s&nav_source=no_referrer'%(url,set)
+        set = re.search('act=(.*?)&nav_source',str(req.content))[1]
+        nek = f'{url}?act={set}&nav_source=no_referrer'
         roq = self.xyz.get(nek,cookies={'cookie':cok})
-        tok = re.search('accessToken="(.*?)"',str(roq.content)).group(1)
-        return(tok)
+        return re.search('accessToken="(.*?)"',str(roq.content))[1]
 
 #--> Main Menu
 class main_menu:
     def __init__(self):
         self.menu_utama()
     def menu_utama(self):
-        print('%s[ %sMain Menu %s]%s'%(H,P,H,P))
-        print('%s[%s1%s] %sPhoto Tag Remover%s'%(H,P,H,P,P))
-        print('%s[%s2%s] %sPost Privacy Changer%s'%(H,P,H,P,P))
-        print('%s[%s3%s] %sPhoto Privacy Changer%s'%(H,P,H,P,P))
-        print('%s[%s4%s] %sAlbum Privacy Changer%s'%(H,P,H,P,P))
-        print('%s[%s5%s] %sDelete All Photo%s'%(H,P,H,P,P))
-        print('%s[%s0%s] %sLogout%s'%(M,P,M,M,P))
-        xd = input(' %s└──Pilih : '%(P))
+        print(f'{H}[ {P}Main Menu {H}]{P}')
+        print(f'{H}[{P}1{H}] {P}Photo Tag Remover{P}')
+        print(f'{H}[{P}2{H}] {P}Post Privacy Changer{P}')
+        print(f'{H}[{P}3{H}] {P}Photo Privacy Changer{P}')
+        print(f'{H}[{P}4{H}] {P}Album Privacy Changer{P}')
+        print(f'{H}[{P}5{H}] {P}Delete All Photo{P}')
+        print(f'{M}[{P}0{M}] {M}Logout{P}')
+        xd = input(f' {P}└──Pilih : ')
         print('')
         if xd in ['1','01','a']:   tag_remover()
         elif xd in ['2','02','b']: priv_post()
         elif xd in ['3','03','c']: priv_photo()
         elif xd in ['4','04','d']: priv_album()
         elif xd in ['5','05','e']: pass
-        elif xd in ['0','00','z']: pass
-        else: exit('\n%sIsi Yg Benar!%s\n'%(M,P))
+        elif xd not in ['0', '00', 'z']: exit('\n%sIsi Yg Benar!%s\n'%(M,P))
 
 #--> Tag Remover
 class tag_remover:
@@ -133,8 +141,11 @@ class tag_remover:
         self.token_eaab = open('login/token_eaab.json','r').read()
         self.cookie     = {'cookie':open('login/cookie.json','r').read()}
         try:
-            id  = self.xyz.get('https://graph.facebook.com/me?fields=name,id&access_token=%s'%(self.token_eaag),cookies=self.cookie).json()['id']
-            url = 'https://mbasic.facebook.com/%s/photoset/t.%s/?owner_id=%s'%(id,id,id)
+            id = self.xyz.get(
+                f'https://graph.facebook.com/me?fields=name,id&access_token={self.token_eaag}',
+                cookies=self.cookie,
+            ).json()['id']
+            url = f'https://mbasic.facebook.com/{id}/photoset/t.{id}/?owner_id={id}'
         except Exception as e:
             login()
         self.dump_photo(url)
@@ -155,11 +166,10 @@ class tag_remover:
             raq = req.find('a',string='Hapus Tanda')
             ht  = 'https://mbasic.facebook.com'+raq['href']
             roq = bs(self.xyz.get(ht,cookies=self.cookie).content,'html.parser')
-            if 'Hapus Tanda' in str(roq):
-                pass
-            else:
+            if 'Hapus Tanda' not in str(roq):
                 self.loop += 1
-                print('\r%sBerhasil Menghapus %s%s %sTag'%(P,H,str(self.loop),P),end=''); sys.stdout.flush()
+                print('\r%sBerhasil Menghapus %s%s %sTag'%(P,H,str(self.loop),P),end='')
+                sys.stdout.flush()
         except Exception as e:
             pass
 
@@ -172,7 +182,7 @@ class priv_post:
         self.xyz   = requests.Session()
         self.cookie = {'cookie':open('login/cookie.json','r').read()}
         self.token  = open('login/token_eaag.json','r').read()
-        url = 'https://graph.facebook.com/me/posts?fields=id,privacy&limit=10000&access_token='+self.token
+        url = f'https://graph.facebook.com/me/posts?fields=id,privacy&limit=10000&access_token={self.token}'
         self.pilihan()
         self.dump_post(url)
         self.sort()
@@ -203,10 +213,7 @@ class priv_post:
             try:
                 if self.priv_awal == 'SEMUA':
                     if x['privacy']['description'] != self.kata_akhir: self.tampung_id_post.append(x['id']+'|'+x['privacy']['description'])
-                    else:pass
-                else:
-                    if x['privacy']['value'] == self.priv_awal: self.tampung_id_post.append(x['id']+'|'+x['privacy']['description'])
-                    else:pass
+                elif x['privacy']['value'] == self.priv_awal: self.tampung_id_post.append(x['id']+'|'+x['privacy']['description'])
             except Exception as e:pass
         try:
             nek = req['paging']['next'] + '&limit=10000'
@@ -215,7 +222,7 @@ class priv_post:
     def sort(self):
         if self.priv_awal == 'SEMUA':
             print('Privasi Yg Sudah Sama Akan Di-Skip')
-        print('Berhasil Mengumpulkan %s Postingan'%(str(len(self.tampung_id_post))))
+        print(f'Berhasil Mengumpulkan {len(self.tampung_id_post)} Postingan')
         tan = int(input('Berapa Post Yg Ingin Dirubah Privasi : '))
         print('')
         with ThreadPoolExecutor(max_workers=30) as TPE:
@@ -236,14 +243,14 @@ class priv_post:
         try:
             lipwid = sorted(list(set(re.findall('"privacy_write_id":"(.*?)"}',str(req)))))
             for pwid in lipwid:
-                haste = re.search('"haste_session":"(.*?)",',str(req)).group(1)
-                rev = re.search('{"rev":(.*?)}',str(req)).group(1)
-                hsi = re.search('"hsi":"(.*?)",',str(req)).group(1)
-                dtsg = re.search('"DTSGInitialData",\[\],{"token":"(.*?)"',str(req)).group(1)
-                jazoest = re.search('&jazoest=(.*?)",',str(req)).group(1)
-                lsd = re.search('"LSD",\[\],{"token":"(.*?)"',str(req)).group(1)
-                spinr = re.search('"__spin_r":(.*?),',str(req)).group(1)
-                spint = re.search('"__spin_t":(.*?),',str(req)).group(1)
+                haste = re.search('"haste_session":"(.*?)",',str(req))[1]
+                rev = re.search('{"rev":(.*?)}',str(req))[1]
+                hsi = re.search('"hsi":"(.*?)",',str(req))[1]
+                dtsg = re.search('"DTSGInitialData",\[\],{"token":"(.*?)"',str(req))[1]
+                jazoest = re.search('&jazoest=(.*?)",',str(req))[1]
+                lsd = re.search('"LSD",\[\],{"token":"(.*?)"',str(req))[1]
+                spinr = re.search('"__spin_r":(.*?),',str(req))[1]
+                spint = re.search('"__spin_t":(.*?),',str(req))[1]
                 priv = {
                     'input' : {
                         "privacy_mutation_token":'null',
@@ -269,11 +276,14 @@ class priv_post:
                     'doc_id':'6685952068091223'}
                 head2 = {'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7','Accept-Encoding':'gzip, deflate','Accept-Language':'en-US,en;q=0.9','Content-Type':'application/x-www-form-urlencoded','Pragma':'akamai-x-cache-on, akamai-x-cache-remote-on, akamai-x-check-cacheable, akamai-x-get-cache-key, akamai-x-get-extracted-values, akamai-x-get-ssl-client-session-id, akamai-x-get-true-cache-key, akamai-x-serial-no, akamai-x-get-request-id,akamai-x-get-nonces,akamai-x-get-client-ip,akamai-x-feo-trace','Origin':'https://www.facebook.com','Referer':'https://www.facebook.com/pages/creation/?ref_type=launch_point','Sec-Ch-Ua':'','Sec-Ch-Ua-Full-Version-List':'','Sec-Ch-Ua-Mobile':'?0','Sec-Ch-Ua-Platform':'','Sec-Ch-Ua-Platform-Version':'','Sec-Fetch-Dest':'empty','Sec-Fetch-Mode':'cors','Sec-Fetch-Site':'same-origin','Sec-Fetch-User':'?1','Upgrade-Insecure-Requests':'1','User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36','X-Fb-Friendly-Name':'CometPrivacySelectorSavePrivacyMutation','X-Fb-Lsd':lsd}
                 pos = self.xyz.post('https://www.facebook.com/api/graphql/',data=data,headers=head2,cookies=self.cookie)
-                if 'A server error noncoercible_variable_value occured' in str(pos): pass
-                else:
+                if (
+                    'A server error noncoercible_variable_value occured'
+                    not in str(pos)
+                ):
                     self.isia.append(pid)
                     print('\r[%s-->%s] %s'%(awal,self.kata_akhir,pid))
-                    print('\rBerhasil Mengubah %s Privasi Postingan'%(str(len(self.isia))),end='');sys.stdout.flush()
+                    print('\rBerhasil Mengubah %s Privasi Postingan'%(str(len(self.isia))),end='')
+                    sys.stdout.flush()
         except Exception as e:
             print('\r[Error] %s'%(e),end=''); sys.stdout.flush()
 
@@ -286,9 +296,9 @@ class priv_photo:
         self.token_eaag = open('login/token_eaag.json','r').read()
         self.token_eaab = open('login/token_eaab.json','r').read()
         self.cookie     = {'cookie':open('login/cookie.json','r').read()}
-        self.id = re.search('c_user=(.*?);',self.cookie['cookie']).group(1)
+        self.id = re.search('c_user=(.*?);',self.cookie['cookie'])[1]
         self.get_album()
-        if len(self.data_photo) == 0:
+        if not self.data_photo:
             print('Tidak Ditemukan Foto')
         else:
             print('Berhasil Mengumpulkan %s Foto\n'%(str(len(self.data_photo))))
@@ -300,7 +310,7 @@ class priv_photo:
         t = ['profile','cover','mobile']
         for x in req['data']:
             if x['type'] in t:
-                url = 'https://graph.facebook.com/%s/photos?fields=id&limit=10000&access_token=%s'%(x['id'],self.token_eaag)
+                url = f"https://graph.facebook.com/{x['id']}/photos?fields=id&limit=10000&access_token={self.token_eaag}"
                 self.get_photo(url)
     def get_photo(self,url):
         req = self.xyz.get(url,cookies=self.cookie).json()
@@ -314,15 +324,15 @@ class priv_photo:
         head1 = {'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7','Accept-Encoding':'gzip, deflate','Accept-Language':'en-US,en;q=0.9','Cache-Control':'max-age=0','Pragma':'akamai-x-cache-on, akamai-x-cache-remote-on, akamai-x-check-cacheable, akamai-x-get-cache-key, akamai-x-get-extracted-values, akamai-x-get-ssl-client-session-id, akamai-x-get-true-cache-key, akamai-x-serial-no, akamai-x-get-request-id,akamai-x-get-nonces,akamai-x-get-client-ip,akamai-x-feo-trace','Sec-Ch-Ua':'','Sec-Ch-Ua-Full-Version-List':'','Sec-Ch-Ua-Mobile':'?0','Sec-Ch-Ua-Platform':'','Sec-Ch-Ua-Platform-Version':'','Sec-Fetch-Dest':'document','Sec-Fetch-Mode':'navigate','Sec-Fetch-Site':'same-origin','Sec-Fetch-User':'?1','Upgrade-Insecure-Requests':'1','User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36'}
         req = bs(self.xyz.get(f'https://www.facebook.com/{pid}',headers=head1,cookies=self.cookie,allow_redirects=True).content,'html.parser')
         try:
-            haste = re.search('"haste_session":"(.*?)",',str(req)).group(1)
-            rev = re.search('{"rev":(.*?)}',str(req)).group(1)
-            hsi = re.search('"hsi":"(.*?)",',str(req)).group(1)
-            dtsg = re.search('"DTSGInitialData",\[\],{"token":"(.*?)"',str(req)).group(1)
-            jazoest = re.search('&jazoest=(.*?)",',str(req)).group(1)
-            lsd = re.search('"LSD",\[\],{"token":"(.*?)"',str(req)).group(1)
-            spinr = re.search('"__spin_r":(.*?),',str(req)).group(1)
-            spint = re.search('"__spin_t":(.*?),',str(req)).group(1)
-            pwid = re.search('"privacy_write_id":"(.*?)"}',str(req)).group(1)
+            haste = re.search('"haste_session":"(.*?)",',str(req))[1]
+            rev = re.search('{"rev":(.*?)}',str(req))[1]
+            hsi = re.search('"hsi":"(.*?)",',str(req))[1]
+            dtsg = re.search('"DTSGInitialData",\[\],{"token":"(.*?)"',str(req))[1]
+            jazoest = re.search('&jazoest=(.*?)",',str(req))[1]
+            lsd = re.search('"LSD",\[\],{"token":"(.*?)"',str(req))[1]
+            spinr = re.search('"__spin_r":(.*?),',str(req))[1]
+            spint = re.search('"__spin_t":(.*?),',str(req))[1]
+            pwid = re.search('"privacy_write_id":"(.*?)"}',str(req))[1]
             priv = {
                 "input":{
                     "privacy_mutation_token":"null",
@@ -348,11 +358,13 @@ class priv_photo:
                 'doc_id':'6685952068091223'}
             head2 = {'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7','Accept-Encoding':'gzip, deflate','Accept-Language':'en-US,en;q=0.9','Content-Type':'application/x-www-form-urlencoded','Pragma':'akamai-x-cache-on, akamai-x-cache-remote-on, akamai-x-check-cacheable, akamai-x-get-cache-key, akamai-x-get-extracted-values, akamai-x-get-ssl-client-session-id, akamai-x-get-true-cache-key, akamai-x-serial-no, akamai-x-get-request-id,akamai-x-get-nonces,akamai-x-get-client-ip,akamai-x-feo-trace','Origin':'https://www.facebook.com','Referer':'https://www.facebook.com/pages/creation/?ref_type=launch_point','Sec-Ch-Ua':'','Sec-Ch-Ua-Full-Version-List':'','Sec-Ch-Ua-Mobile':'?0','Sec-Ch-Ua-Platform':'','Sec-Ch-Ua-Platform-Version':'','Sec-Fetch-Dest':'empty','Sec-Fetch-Mode':'cors','Sec-Fetch-Site':'same-origin','Sec-Fetch-User':'?1','Upgrade-Insecure-Requests':'1','User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36','X-Fb-Friendly-Name':'CometPrivacySelectorSavePrivacyMutation','X-Fb-Lsd':lsd}
             pos = self.xyz.post('https://www.facebook.com/api/graphql/',data=data,headers=head2,cookies=self.cookie)
-            if 'A server error noncoercible_variable_value occured' in str(pos): pass
-            else:
+            if 'A server error noncoercible_variable_value occured' not in str(
+                pos
+            ):
                 self.isia.append(pid)
                 print('\r[Only Me] %s                                     '%(pid))
-                print('\rBerhasil Mengubah %s Privasi Foto'%(str(len(self.isia))),end='');sys.stdout.flush()
+                print('\rBerhasil Mengubah %s Privasi Foto'%(str(len(self.isia))),end='')
+                sys.stdout.flush()
         except Exception as e:
             print('\r[Error] %s'%(e),end=''); sys.stdout.flush()
 
@@ -365,9 +377,9 @@ class priv_album:
         self.token_eaag = open('login/token_eaag.json','r').read()
         self.token_eaab = open('login/token_eaab.json','r').read()
         self.cookie = {'cookie':open('login/cookie.json','r').read()}
-        self.id = re.search('c_user=(.*?);',self.cookie['cookie']).group(1)
+        self.id = re.search('c_user=(.*?);',self.cookie['cookie'])[1]
         self.get_album()
-        if len(self.album) == 0:
+        if not self.album:
             print('Tidak Ditemukan Album')
         else:
             print('Berhasil Mendata %s Album\n'%(str(len(self.album))))
@@ -381,17 +393,25 @@ class priv_album:
             except Exception as e: pass
     def privacy_graphql(self,pid):
         head1 = {'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7','Accept-Encoding':'gzip, deflate','Accept-Language':'en-US,en;q=0.9','Cache-Control':'max-age=0','Pragma':'akamai-x-cache-on, akamai-x-cache-remote-on, akamai-x-check-cacheable, akamai-x-get-cache-key, akamai-x-get-extracted-values, akamai-x-get-ssl-client-session-id, akamai-x-get-true-cache-key, akamai-x-serial-no, akamai-x-get-request-id,akamai-x-get-nonces,akamai-x-get-client-ip,akamai-x-feo-trace','Sec-Ch-Ua':'','Sec-Ch-Ua-Full-Version-List':'','Sec-Ch-Ua-Mobile':'?0','Sec-Ch-Ua-Platform':'','Sec-Ch-Ua-Platform-Version':'','Sec-Fetch-Dest':'document','Sec-Fetch-Mode':'navigate','Sec-Fetch-Site':'same-origin','Sec-Fetch-User':'?1','Upgrade-Insecure-Requests':'1','User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36'}
-        req = bs(self.xyz.get('https://www.facebook.com/media/set/?set=a.%s&type=3'%(pid['id']),headers=head1,cookies=self.cookie,allow_redirects=True).content,'html.parser')
+        req = bs(
+            self.xyz.get(
+                f"https://www.facebook.com/media/set/?set=a.{pid['id']}&type=3",
+                headers=head1,
+                cookies=self.cookie,
+                allow_redirects=True,
+            ).content,
+            'html.parser',
+        )
         try:
-            haste = re.search('"haste_session":"(.*?)",',str(req)).group(1)
-            rev = re.search('{"rev":(.*?)}',str(req)).group(1)
-            hsi = re.search('"hsi":"(.*?)",',str(req)).group(1)
-            dtsg = re.search('"DTSGInitialData",\[\],{"token":"(.*?)"',str(req)).group(1)
-            jazoest = re.search('&jazoest=(.*?)",',str(req)).group(1)
-            lsd = re.search('"LSD",\[\],{"token":"(.*?)"',str(req)).group(1)
-            spinr = re.search('"__spin_r":(.*?),',str(req)).group(1)
-            spint = re.search('"__spin_t":(.*?),',str(req)).group(1)
-            pwid = re.search('"privacy_write_id":"(.*?)"}',str(req)).group(1)
+            haste = re.search('"haste_session":"(.*?)",',str(req))[1]
+            rev = re.search('{"rev":(.*?)}',str(req))[1]
+            hsi = re.search('"hsi":"(.*?)",',str(req))[1]
+            dtsg = re.search('"DTSGInitialData",\[\],{"token":"(.*?)"',str(req))[1]
+            jazoest = re.search('&jazoest=(.*?)",',str(req))[1]
+            lsd = re.search('"LSD",\[\],{"token":"(.*?)"',str(req))[1]
+            spinr = re.search('"__spin_r":(.*?),',str(req))[1]
+            spint = re.search('"__spin_t":(.*?),',str(req))[1]
+            pwid = re.search('"privacy_write_id":"(.*?)"}',str(req))[1]
             akhir = 'SELF'
             var = {
                 "input":{
@@ -418,11 +438,13 @@ class priv_album:
                 'doc_id':'6685952068091223'}
             head2 = {'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7','Accept-Encoding':'gzip, deflate','Accept-Language':'en-US,en;q=0.9','Content-Type':'application/x-www-form-urlencoded','Pragma':'akamai-x-cache-on, akamai-x-cache-remote-on, akamai-x-check-cacheable, akamai-x-get-cache-key, akamai-x-get-extracted-values, akamai-x-get-ssl-client-session-id, akamai-x-get-true-cache-key, akamai-x-serial-no, akamai-x-get-request-id,akamai-x-get-nonces,akamai-x-get-client-ip,akamai-x-feo-trace','Origin':'https://www.facebook.com','Referer':'https://www.facebook.com/pages/creation/?ref_type=launch_point','Sec-Ch-Ua':'','Sec-Ch-Ua-Full-Version-List':'','Sec-Ch-Ua-Mobile':'?0','Sec-Ch-Ua-Platform':'','Sec-Ch-Ua-Platform-Version':'','Sec-Fetch-Dest':'empty','Sec-Fetch-Mode':'cors','Sec-Fetch-Site':'same-origin','Sec-Fetch-User':'?1','Upgrade-Insecure-Requests':'1','User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36','X-Fb-Friendly-Name':'CometPrivacySelectorSavePrivacyMutation','X-Fb-Lsd':lsd}
             pos = self.xyz.post('https://www.facebook.com/api/graphql/',data=data,headers=head2,cookies=self.cookie)
-            if 'A server error noncoercible_variable_value occured' in str(pos): pass
-            else:
+            if 'A server error noncoercible_variable_value occured' not in str(
+                pos
+            ):
                 self.isia.append(pid['id'])
                 print('\r[%s-->%s] %s                                  '%(pid['priv'],akhir,pid['id']))
-                print('\rBerhasil Mengubah %s Privasi Postingan'%(str(len(self.isia))),end='');sys.stdout.flush()
+                print('\rBerhasil Mengubah %s Privasi Postingan'%(str(len(self.isia))),end='')
+                sys.stdout.flush()
         except Exception as e:
             print('\r[Error] %s'%(e),end=''); sys.stdout.flush()
 

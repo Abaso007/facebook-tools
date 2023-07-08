@@ -26,17 +26,25 @@ def clear():
         except:pass
 
 def input_cookie():
-    print('%sApabila A2F On, Buka Link Dibawah, Lalu Masukkan Kode A2F'%(P))
+    print(f'{P}Apabila A2F On, Buka Link Dibawah, Lalu Masukkan Kode A2F')
     print('%shttps://business.facebook.com/business_locations\n'%(P))
-    cookie = input('%sMasukkan Cookie : %s'%(P,J))
-    Token1 = generate_token_eaab(cookie); Perm1 = req_info_token(cookie,Token1) # Power Editor Token
-    Token2 = generate_token_eaag(cookie); Perm2 = req_info_token(cookie,Token2) # Business Manager Token
-    Token3 = generate_token_eaai(cookie); Perm3 = req_info_token(cookie,Token3) # Ads Management Token
-    Token4 = generate_token_eaad(cookie); Perm4 = req_info_token(cookie,Token4) # Ads Event Manager Token
-    Token5 = generate_token_eaaC(cookie); Perm5 = req_info_token(cookie,Token5) # Ads Block List Token
-    Token6 = generate_token_eaae(cookie); Perm6 = req_info_token(cookie,Token6) # Account Quality Token
-    Token7 = generate_token_eaaf(cookie); Perm7 = req_info_token(cookie,Token7) # Lift Study Creation Token
-    Token8 = generate_token_eabb(cookie); Perm8 = req_info_token(cookie,Token8) # Hub Materi Iklan Token
+    cookie = input(f'{P}Masukkan Cookie : {J}')
+    Token1 = generate_token_eaab(cookie)
+    Perm1 = req_info_token(cookie,Token1) # Power Editor Token
+    Token2 = generate_token_eaag(cookie)
+    Perm2 = req_info_token(cookie,Token2) # Business Manager Token
+    Token3 = generate_token_eaai(cookie)
+    Perm3 = req_info_token(cookie,Token3) # Ads Management Token
+    Token4 = generate_token_eaad(cookie)
+    Perm4 = req_info_token(cookie,Token4) # Ads Event Manager Token
+    Token5 = generate_token_eaaC(cookie)
+    Perm5 = req_info_token(cookie,Token5) # Ads Block List Token
+    Token6 = generate_token_eaae(cookie)
+    Perm6 = req_info_token(cookie,Token6) # Account Quality Token
+    Token7 = generate_token_eaaf(cookie)
+    Perm7 = req_info_token(cookie,Token7) # Lift Study Creation Token
+    Token8 = generate_token_eabb(cookie)
+    Perm8 = req_info_token(cookie,Token8) # Hub Materi Iklan Token
     print('\n%s[ Power Editor Token ]\n%s%s\n%s[ Permissions ]\n%s%s%s'        %(P,J,Token1,P,H,Perm1,P))
     print('\n%s[ Business Manager Token ]\n%s%s\n%s[ Permissions ]\n%s%s%s'    %(P,J,Token2,P,H,Perm2,P))
     print('\n%s[ Ads Management Token ]\n%s%s\n%s[ Permissions ]\n%s%s%s'      %(P,J,Token3,P,H,Perm3,P))
@@ -49,13 +57,13 @@ def input_cookie():
 def req_info_token(cooki,token):
     try:
         cookie = {'cookie':cooki}
-        url    = 'https://developers.facebook.com/tools/debug/accesstoken/?access_token=%s&version=v15.0'%(token)
+        url = f'https://developers.facebook.com/tools/debug/accesstoken/?access_token={token}&version=v15.0'
         with requests.Session() as xyz:
             req = bs(xyz.get(url,cookies=cookie).content,'html.parser')
             crf = req.find('a',href='/docs/reference/login/#permissions')
             return(crf.text)
     except Exception as e:
-        return('%sPermissions Not Available%s'%(M,P))
+        return f'{M}Permissions Not Available{P}'
 
 def generate_token_eaab(cok): # Power Editor Token
     try:
@@ -63,11 +71,10 @@ def generate_token_eaab(cok): # Power Editor Token
         with requests.Session() as xyz:
             url = 'https://www.facebook.com/adsmanager/manage/campaigns'
             req = xyz.get(url,cookies=cookie)
-            set = re.search('act=(.*?)&nav_source',str(req.content)).group(1)
-            nek = '%s?act=%s&nav_source=no_referrer'%(url,set)
+            set = re.search('act=(.*?)&nav_source',str(req.content))[1]
+            nek = f'{url}?act={set}&nav_source=no_referrer'
             roq = xyz.get(nek,cookies=cookie)
-            tok = re.search('accessToken="(.*?)"',str(roq.content)).group(1)
-            return(tok)
+            return re.search('accessToken="(.*?)"',str(roq.content))[1]
     except Exception as e:
         return('Cookies Invalid')
 
@@ -77,8 +84,7 @@ def generate_token_eaag(cok): # Business Manager Token
         with requests.Session() as xyz:
             url = 'https://business.facebook.com/business_locations'
             req = xyz.get(url,cookies=cookie)
-            tok = re.search('(\["EAAG\w+)', req.text).group(1).replace('["','')
-            return(tok)
+            return re.search('(\["EAAG\w+)', req.text)[1].replace('["', '')
     except Exception as e:
         return('Cookies Invalid')
 
@@ -88,8 +94,7 @@ def generate_token_eaai(cok): # Ads Management Token
         with requests.Session() as xyz:
             url = 'https://www.facebook.com/ads/manager/billing_history/summary/'
             req = xyz.get(url,cookies=cookie)
-            tok = re.search('{access_token:"(.*?)"',req.text).group(1)
-            return(tok)
+            return re.search('{access_token:"(.*?)"',req.text)[1]
     except Exception as e:
         return('Cookies Invalid')
 
@@ -99,8 +104,7 @@ def generate_token_eaad(cok): # Ads Event Manager Token
         with requests.Session() as xyz:
             url = 'https://www.facebook.com/events_manager2/overview'
             req = xyz.get(url,cookies=cookie)
-            tok = re.search('{"accessToken":"(EAAd\w+)',req.text).group(1)
-            return(tok)
+            return re.search('{"accessToken":"(EAAd\w+)',req.text)[1]
     except Exception as e:
         return('Cookies Invalid')
 
@@ -110,8 +114,7 @@ def generate_token_eaaC(cok): # Ads Block List Token
         with requests.Session() as xyz:
             url = 'https://www.facebook.com/brand_safety/controls'
             req = xyz.get(url,cookies=cookie)
-            tok = re.search('{"accessToken":"(EAAC\w+)',req.text).group(1)
-            return(tok)
+            return re.search('{"accessToken":"(EAAC\w+)',req.text)[1]
     except Exception as e:
         return('Cookies Invalid')
 
@@ -121,8 +124,7 @@ def generate_token_eaae(cok): # Account Quality Token
         with requests.Session() as xyz:
             url = 'https://www.facebook.com/accountquality/'
             req = xyz.get(url,cookies=cookie)
-            tok = re.search('"accessToken":"(EAAE\w+)',req.text).group(1)
-            return(tok)
+            return re.search('"accessToken":"(EAAE\w+)',req.text)[1]
     except Exception as e:
         return('Cookies Invalid')
 
@@ -132,8 +134,7 @@ def generate_token_eaaf(cok): # Lift Study Creation Token
         with requests.Session() as xyz:
             url = 'https://www.facebook.com/test-and-learn/test'
             req = xyz.get(url,cookies=cookie)
-            tok = re.search('{"accessToken":"(EAAF\w+)',req.text).group(1)
-            return(tok)
+            return re.search('{"accessToken":"(EAAF\w+)',req.text)[1]
     except Exception as e:
         return('Cookies Invalid')
 
@@ -143,8 +144,7 @@ def generate_token_eabb(cok): # Hub Materi Iklan Token
         with requests.Session() as xyz:
             url = 'https://www.facebook.com/ads/adbuilder/home'
             req = xyz.get(url,cookies=cookie)
-            tok = re.search('"accessToken":"(EABB\w+)',req.text).group(1)
-            return(tok)
+            return re.search('"accessToken":"(EABB\w+)',req.text)[1]
     except Exception as e:
         return('Cookies Invalid')
 

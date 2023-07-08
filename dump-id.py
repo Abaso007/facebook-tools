@@ -18,7 +18,7 @@ def clear():
 skrng = datetime.datetime.now()
 tahun, bulan, hari = skrng.year, skrng.month, skrng.day
 bulan_cek = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"]
-tanggal = ("%s-%s-%s"%(hari,bulan_cek[bulan-1],tahun))
+tanggal = f"{hari}-{bulan_cek[bulan - 1]}-{tahun}"
 
 #--> Waktu Jalannya Program
 def start():
@@ -51,9 +51,14 @@ def language(cookie):
             for x in pra.find_all('form',{'method':'post'}):
                 if 'Bahasa Indonesia' in str(x):
                     bahasa = {
-                        "fb_dtsg" : re.search('name="fb_dtsg" value="(.*?)"',str(req.text)).group(1),
-                        "jazoest" : re.search('name="jazoest" value="(.*?)"', str(req.text)).group(1),
-                        "submit"  : "Bahasa Indonesia"}
+                        "fb_dtsg": re.search(
+                            'name="fb_dtsg" value="(.*?)"', req.text
+                        )[1],
+                        "jazoest": re.search(
+                            'name="jazoest" value="(.*?)"', req.text
+                        )[1],
+                        "submit": "Bahasa Indonesia",
+                    }
                     url = 'https://mbasic.facebook.com' + x['action']
                     exec = xyz.post(url,data=bahasa,cookies=cookie)
     except Exception as e:pass
@@ -61,18 +66,31 @@ def language(cookie):
 #--> Convert
 def user_to_id(username):
     try:
-        req = bs(requests.Session().get('https://mbasic.facebook.com/%s'%(username), cookies={'cookie':open('login/cookie.json','r').read()}).content, 'html.parser')
+        req = bs(
+            requests.Session()
+            .get(
+                f'https://mbasic.facebook.com/{username}',
+                cookies={'cookie': open('login/cookie.json', 'r').read()},
+            )
+            .content,
+            'html.parser',
+        )
         kut = req.find('a',string='Lainnya')
-        id = str(kut['href']).split('=')[1].split('&')[0]
-        # id = re.search('owner_id=(.*?)"',str(kut)).group(1)
-        return(id)
+        return str(kut['href']).split('=')[1].split('&')[0]
     except Exception as e:return(username)
 def group_to_id(username):
     try:
-        req = bs(requests.Session().get('https://mbasic.facebook.com/groups/%s'%(username), cookies={'cookie':open('login/cookie.json','r').read()}).content, 'html.parser')
+        req = bs(
+            requests.Session()
+            .get(
+                f'https://mbasic.facebook.com/groups/{username}',
+                cookies={'cookie': open('login/cookie.json', 'r').read()},
+            )
+            .content,
+            'html.parser',
+        )
         kut = req.find('a',string='Lihat Postingan Lainnya')
-        id = str(kut['href']).split('?')[0].split('/')[2]
-        return(id)
+        return str(kut['href']).split('?')[0].split('/')[2]
     except Exception as e:return(username)
 
 #--> Logo
@@ -97,9 +115,18 @@ class login:
             self.token_eaab = open('login/token_eaab.json','r').read()
             self.token_eaaj = open('login/token_eaaj.json','r').read()
             language(self.cookie)
-            req1 = self.xyz.get('https://graph.facebook.com/me?fields=name,id&access_token=%s'%(self.token_eaag),cookies=self.cookie).json()['name']
-            req2 = self.xyz.get('https://graph.facebook.com/me/friends?fields=summary&limit=0&access_token=%s'%(self.token_eaab),cookies=self.cookie).json()['summary']['total_count']
-            req3 = self.xyz.get('https://graph.facebook.com/me?fields=friends.limit(0).fields(id,name,birthday)&access_token=%s'%(self.token_eaaj),cookies=self.cookie).json()['friends']
+            req1 = self.xyz.get(
+                f'https://graph.facebook.com/me?fields=name,id&access_token={self.token_eaag}',
+                cookies=self.cookie,
+            ).json()['name']
+            req2 = self.xyz.get(
+                f'https://graph.facebook.com/me/friends?fields=summary&limit=0&access_token={self.token_eaab}',
+                cookies=self.cookie,
+            ).json()['summary']['total_count']
+            req3 = self.xyz.get(
+                f'https://graph.facebook.com/me?fields=friends.limit(0).fields(id,name,birthday)&access_token={self.token_eaaj}',
+                cookies=self.cookie,
+            ).json()['friends']
             clear()
             logo()
         except Exception as e:
@@ -126,15 +153,15 @@ class login:
     def generate_token_eaag(self,cok):
         url = 'https://business.facebook.com/business_locations'
         req = self.xyz.get(url,cookies={'cookie':cok})
-        tok = re.search('(\["EAAG\w+)', req.text).group(1).replace('["','')
+        tok = re.search('(\["EAAG\w+)', req.text)[1].replace('["', '')
         return(str(tok))
     def generate_token_eaab(self,cok):
         url = 'https://www.facebook.com/adsmanager/manage/campaigns'
         req = self.xyz.get(url,cookies={'cookie':cok})
-        set = re.search('act=(.*?)&nav_source',str(req.content)).group(1)
-        nek = '%s?act=%s&nav_source=no_referrer'%(url,set)
+        set = re.search('act=(.*?)&nav_source',str(req.content))[1]
+        nek = f'{url}?act={set}&nav_source=no_referrer'
         roq = self.xyz.get(nek,cookies={'cookie':cok})
-        tok = re.search('accessToken="(.*?)"',str(roq.content)).group(1)
+        tok = re.search('accessToken="(.*?)"',str(roq.content))[1]
         return(str(tok))
     def generate_token_eaaj(self,cok):
         self.cookie = {'cookie':cok}
@@ -143,18 +170,27 @@ class login:
         req  = self.xyz.post('https://graph.facebook.com/v16.0/device/login/',data=data).json()
         cd   = req['code']
         ucd  = req['user_code']
-        url  = 'https://graph.facebook.com/v16.0/device/login_status?method=post&code=%s&access_token=%s'%(cd,apk)
+        url = f'https://graph.facebook.com/v16.0/device/login_status?method=post&code={cd}&access_token={apk}'
         req  = bs(self.xyz.get('https://mbasic.facebook.com/device',cookies=self.cookie).content,'html.parser')
         raq  = req.find('form',{'method':'post'})
-        dat  = {'jazoest' : re.search('name="jazoest" type="hidden" value="(.*?)"',str(raq)).group(1), 'fb_dtsg' : re.search('name="fb_dtsg" type="hidden" value="(.*?)"',str(req)).group(1), 'qr' : '0', 'user_code' : ucd}
+        dat = {
+            'jazoest': re.search(
+                'name="jazoest" type="hidden" value="(.*?)"', str(raq)
+            )[1],
+            'fb_dtsg': re.search(
+                'name="fb_dtsg" type="hidden" value="(.*?)"', str(req)
+            )[1],
+            'qr': '0',
+            'user_code': ucd,
+        }
         rel  = 'https://mbasic.facebook.com' + raq['action']
         pos  = bs(self.xyz.post(rel,data=dat,cookies=self.cookie).content,'html.parser')
         dat  = {}
         raq  = pos.find('form',{'method':'post'})
         for x in raq('input',{'value':True}):
             try:
-                if x['name'] == '__CANCEL__' : pass
-                else: dat.update({x['name']:x['value']})
+                if x['name'] != '__CANCEL__':
+                    dat[x['name']] = x['value']
             except Exception as e: pass
         rel = 'https://mbasic.facebook.com' + raq['action']
         pos = bs(self.xyz.post(rel,data=dat,cookies=self.cookie).content,'html.parser')
@@ -176,45 +212,67 @@ class main_menu:
         q = ' '*6
         z = {}
         try:
-            req = self.xyz.get('https://graph.facebook.com/me?fields=name,id&access_token=%s'%(self.token_eaag),cookies=self.cookie).json()
-            if len(req['name']) > 18: z.update({'Nama':str(req['name'])[:15]+'...'})
-            else: z.update({'Nama':str(req['name'])[:15]})
-            z.update({'ID':str(req['id'])})
+            req = self.xyz.get(
+                f'https://graph.facebook.com/me?fields=name,id&access_token={self.token_eaag}',
+                cookies=self.cookie,
+            ).json()
+            if len(req['name']) > 18:
+                z['Nama'] = str(req['name'])[:15]+'...'
+            else:else
+                z['Nama'] = str(req['name'])[:15]
+            z['ID'] = str(req['id'])
         except Exception as e: login()
         try:
             bln    = {'01':'Januari', '02':'Februari', '03':'Maret', '04':'April', '05':'Mei', '06':'Juni', '07':'Juli', '08':'Agustus', '09':'September', '10':'Oktober', '11':'November', '12':'Desember'}
-            t,m,h  = [x['created_time'].split('T')[0] for x in self.xyz.get('https://graph.facebook.com/me/albums?fields=id,name,created_time&limit=1000&access_token=%s'%(self.token_eaag),cookies=self.cookie).json()['data'] if x['name']=='Foto Profil'][0].split('-')
-            z.update({'Buat':'%s %s %s'%(h,bln[m],t)})
+            t, m, h = [
+                x['created_time'].split('T')[0]
+                for x in self.xyz.get(
+                    f'https://graph.facebook.com/me/albums?fields=id,name,created_time&limit=1000&access_token={self.token_eaag}',
+                    cookies=self.cookie,
+                ).json()['data']
+                if x['name'] == 'Foto Profil'
+            ][0].split('-')
+            z['Buat'] = f'{h} {bln[m]} {t}'
         except Exception as e: pass
         try:
-            fren = str(self.xyz.get('https://graph.facebook.com/me/friends?fields=summary&limit=0&access_token=%s'%(self.token_eaab),cookies=self.cookie).json()['summary']['total_count'])
-            z.update({'Teman':fren})
+            fren = str(
+                self.xyz.get(
+                    f'https://graph.facebook.com/me/friends?fields=summary&limit=0&access_token={self.token_eaab}',
+                    cookies=self.cookie,
+                ).json()['summary']['total_count']
+            )
+            z['Teman'] = fren
         except Exception as e: pass
         try:
-            fols = str(self.xyz.get('https://graph.facebook.com/me/subscribers?limit=0&access_token=%s'%(self.token_eaag),cookies=self.cookie).json()['summary']['total_count'])
-            z.update({'Folls':fols})
+            fols = str(
+                self.xyz.get(
+                    f'https://graph.facebook.com/me/subscribers?limit=0&access_token={self.token_eaag}',
+                    cookies=self.cookie,
+                ).json()['summary']['total_count']
+            )
+            z['Folls'] = fols
         except Exception as e: pass
-        print('%s╭────────────[ Welcome ]───────────╮'%(q))
+        print(f'{q}╭────────────[ Welcome ]───────────╮')
         for x,y in zip(z.keys(),z.values()):
-            print('%s│    %s%s: %s%s│'%(q,x,' '*(6-len(x)),y,' '*(22-len(y))))
-        print('%s╰──────────────────────────────────╯'%(q))
+            print(f"{q}│    {x}{' ' * (6 - len(x))}: {y}{' ' * (22 - len(y))}│")
+        print(f'{q}╰──────────────────────────────────╯')
     def menu(self):
         c = ' '*0
         print('\n%s  [ Account ]        [ Group ]        [ Post ]\n'%(c))
-        print('%s[01] Friendlist    [15] Members     [19] Comment'%(c))
-        print('%s[02] Followers     [16] Timeline    [20] React'%(c))
-        print('%s[03] Comment       [17] Comment'%(c))
-        print('%s[04] React         [18] React'%(c))
-        print('%s[05] Message'%(c))
-        print('%s[06] Name'%(c))
-        print('%s[07] Timeline'%(c))
-        print('%s[08] Hashtag'%(c))
-        print('%s[09] Email'%(c))
-        print('%s[10] Phone'%(c))
-        print('%s[11] Username'%(c))
-        print('%s[12] ID Random'%(c))
-        print('%s[13] Suggestion'%(c))
-        print('%s[14] FL Dari FL'%(c))
+        print(f'{c}[01] Friendlist    [15] Members     [19] Comment')
+        print(f'{c}[02] Followers     [16] Timeline    [20] React')
+        print(f'{c}[03] Comment       [17] Comment')
+        print(f'{c}[04] React         [18] React')
+        print(f'{c}[05] Message')
+        print(f'{c}[06] Name')
+        print(f'{c}[07] Timeline')
+        print(f'{c}[08] Hashtag')
+        print(f'{c}[09] Email')
+        print(f'{c}[10] Phone')
+        print(f'{c}[11] Username')
+        print(f'{c}[12] ID Random')
+        print(f'{c}[13] Suggestion')
+        print(f'{c}[14] FL Dari FL')
     def pilih_menu(self):
         xo = input('\nPilih : ')
         print('')
@@ -275,20 +333,30 @@ class dump_friendlist:
         else: print('\rBerhasil Mendapat %s ID'%(str(len(self.dump))))
     def cek(self,id):
         try: 
-            nama  = str(self.xyz.get('https://graph.facebook.com/%s?fields=name&access_token=%s'%(id,self.token_eaag),cookies=self.cookie).json()['name'])
-            teman = str(self.xyz.get('https://graph.facebook.com/%s?fields=friends.limit(0).fields(id,name,birthday)&access_token=%s'%(id,self.token_eaaj),cookies=self.cookie).json()['friends']['summary']['total_count'])
-            print(' • %s --> %s Teman'%(nama,teman))
+            nama = str(
+                self.xyz.get(
+                    f'https://graph.facebook.com/{id}?fields=name&access_token={self.token_eaag}',
+                    cookies=self.cookie,
+                ).json()['name']
+            )
+            teman = str(
+                self.xyz.get(
+                    f'https://graph.facebook.com/{id}?fields=friends.limit(0).fields(id,name,birthday)&access_token={self.token_eaaj}',
+                    cookies=self.cookie,
+                ).json()['friends']['summary']['total_count']
+            )
+            print(f' • {nama} --> {teman} Teman')
         except Exception as e:
-            print(' • %s --> Kesalahan/Private'%(id))
+            print(f' • {id} --> Kesalahan/Private')
             self.fail.append(id)
     def requ(self,id):
-        url = 'https://graph.facebook.com/%s?fields=friends.limit(5000).fields(id,name,birthday)&access_token=%s'%(id,self.token_eaaj)
+        url = f'https://graph.facebook.com/{id}?fields=friends.limit(5000).fields(id,name,birthday)&access_token={self.token_eaaj}'
         try:
             req = self.xyz.get(url,cookies=self.cookie).json()
             for y in req['friends']['data']:
                 try:
                     id, nama = y['id'], y['name']
-                    format = '%s%s%s'%(id,self.pisah,nama)
+                    format = f'{id}{self.pisah}{nama}'
                     self.dump.append(format)
                     animasi()
                 except Exception as e: pass
@@ -323,16 +391,28 @@ class dump_followers:
             if s == 'me': io = s
             elif (re.findall("[a-zA-Z]",str(s))) : io = user_to_id(s)
             else : io = s
-            self.requ('https://graph.facebook.com/%s/subscribers?limit=1000&access_token=%s'%(io,self.token_eaag))
+            self.requ(
+                f'https://graph.facebook.com/{io}/subscribers?limit=1000&access_token={self.token_eaag}'
+            )
         if len(self.dump) == 0: print('\rDump ID Gagal')
         else: print('\rBerhasil Mendapat %s ID'%(str(len(self.dump))))
     def cek(self,id):
         try: 
-            nama  = str(self.xyz.get('https://graph.facebook.com/%s?fields=name&access_token=%s'%(id,self.token_eaag),cookies=self.cookie).json()['name'])
-            folls = str(self.xyz.get('https://graph.facebook.com/%s/subscribers?limit=0&access_token=%s'%(id,self.token_eaag),cookies=self.cookie).json()['summary']['total_count'])
-            print(' • %s --> %s Folls'%(nama,folls))
+            nama = str(
+                self.xyz.get(
+                    f'https://graph.facebook.com/{id}?fields=name&access_token={self.token_eaag}',
+                    cookies=self.cookie,
+                ).json()['name']
+            )
+            folls = str(
+                self.xyz.get(
+                    f'https://graph.facebook.com/{id}/subscribers?limit=0&access_token={self.token_eaag}',
+                    cookies=self.cookie,
+                ).json()['summary']['total_count']
+            )
+            print(f' • {nama} --> {folls} Folls')
         except Exception as e:
-            print(' • %s --> Kesalahan/Private'%(id))
+            print(f' • {id} --> Kesalahan/Private')
             self.fail.append(id)
     def requ(self,url):
         try:
@@ -340,7 +420,7 @@ class dump_followers:
             for y in req['data']:
                 try:
                     id, nama = y['id'], y['name']
-                    format = '%s%s%s'%(id,self.pisah,nama)
+                    format = f'{id}{self.pisah}{nama}'
                     self.dump.append(format)
                     animasi()
                 except Exception as e: pass
@@ -391,24 +471,34 @@ class dump_fl_fl:
         else: print('\rBerhasil Mendapat %s ID'%(str(len(self.dump))))
     def cek(self,id):
         try: 
-            nama  = str(self.xyz.get('https://graph.facebook.com/%s?fields=name&access_token=%s'%(id,self.token_eaag),cookies=self.cookie).json()['name'])
-            teman = str(self.xyz.get('https://graph.facebook.com/%s/friends?fields=summary&limit=0&access_token=%s'%(id,self.token_eaab),cookies=self.cookie).json()['summary']['total_count'])
-            print(' • %s --> %s Teman'%(nama,teman))
+            nama = str(
+                self.xyz.get(
+                    f'https://graph.facebook.com/{id}?fields=name&access_token={self.token_eaag}',
+                    cookies=self.cookie,
+                ).json()['name']
+            )
+            teman = str(
+                self.xyz.get(
+                    f'https://graph.facebook.com/{id}/friends?fields=summary&limit=0&access_token={self.token_eaab}',
+                    cookies=self.cookie,
+                ).json()['summary']['total_count']
+            )
+            print(f' • {nama} --> {teman} Teman')
         except Exception as e:
-            print(' • %s --> Kesalahan/Private'%(id))
+            print(f' • {id} --> Kesalahan/Private')
             self.fail.append(id)
     def requ(self,id,tp):
-        url = 'https://graph.facebook.com/%s/friends?fields=id,name&limit=5000&access_token=%s'%(id,self.token_eaab)
+        url = f'https://graph.facebook.com/{id}/friends?fields=id,name&limit=5000&access_token={self.token_eaab}'
         try:
             req = self.xyz.get(url,cookies=self.cookie).json()
-            pen = [ '%s%s%s'%(y['id'],self.pisah,y['name']) for y in req['data']]
-            sm_ = []
+            pen = [f"{y['id']}{self.pisah}{y['name']}" for y in req['data']]
             sm  = []
             if self.t1 in ['1','01','t','tua']:
                 for z in pen:
                     sm.append(z)
                     if len(sm) == int(self.t2): break
             else:
+                sm_ = []
                 for z in pen:
                     sm_.insert(0,z)
                 for z_ in sm_:
@@ -416,11 +506,10 @@ class dump_fl_fl:
                     if len(sm) == int(self.t2): break
                 if tp == '1':
                     return(sm)
-                else:
-                    for h in sm:
-                        if h in self.dump:pass
-                        else:self.dump.append(h)
-                        animasi()
+                for h in sm:
+                    if h not in self.dump:
+                        self.dump.append(h)
+                    animasi()
         except Exception as e: pass
 
 #--> Dump React, Comment, Member, Photo, Timeline
@@ -472,19 +561,36 @@ class dump_react_comment:
         else: print('\rBerhasil Mendapat %s ID'%(str(len(self.dump))))
     def cek_A(self,id):
         try: 
-            nama  = str(self.xyz.get('https://graph.facebook.com/%s?fields=name&access_token=%s'%(id,self.token_eaag),cookies=self.cookie).json()['name'])
-            lisz  = [x['id'] for x in self.xyz.get('https://graph.facebook.com/%s/posts?fields=id&limit=%s&access_token=%s'%(id,self.limit,self.token_eaag),cookies=self.cookie).json()['data']]
+            nama = str(
+                self.xyz.get(
+                    f'https://graph.facebook.com/{id}?fields=name&access_token={self.token_eaag}',
+                    cookies=self.cookie,
+                ).json()['name']
+            )
+            lisz = [
+                x['id']
+                for x in self.xyz.get(
+                    f'https://graph.facebook.com/{id}/posts?fields=id&limit={self.limit}&access_token={self.token_eaag}',
+                    cookies=self.cookie,
+                ).json()['data']
+            ]
             post  = str(len(lisz))
-            print(' • %s --> %s Post'%(nama,post))
+            print(f' • {nama} --> {post} Post')
         except Exception as e:
-            print(' • %s --> Kesalahan/Private'%(id))
+            print(f' • {id} --> Kesalahan/Private')
             self.fail.append(id)
     def requ1_A(self,id):
-        lisz  = [x['id'] for x in self.xyz.get('https://graph.facebook.com/%s/posts?fields=id&limit=%s&access_token=%s'%(id,self.limit,self.token_eaag),cookies=self.cookie).json()['data']]
+        lisz = [
+            x['id']
+            for x in self.xyz.get(
+                f'https://graph.facebook.com/{id}/posts?fields=id&limit={self.limit}&access_token={self.token_eaag}',
+                cookies=self.cookie,
+            ).json()['data']
+        ]
         try:
             for pid in lisz:
                 if self.modul == 'K':
-                    url = 'https://mbasic.facebook.com/' + pid
+                    url = f'https://mbasic.facebook.com/{pid}'
                     self.main_requ_comment(url)
                 else:
                     self.main_requ_react(pid)
@@ -496,8 +602,7 @@ class dump_react_comment:
         id = input('Masukkan ID Grup : ').split(',')
         print('')
         for f in id:
-            if (re.findall("[a-zA-Z]",str(f))) : io = group_to_id(f)
-            else : io = f
+            io = group_to_id(f) if (re.findall("[a-zA-Z]",str(f))) else f
             self.cek_G(io)
         print('')
         print('Tekan ctrl+c Untuk Berhenti')
@@ -506,34 +611,54 @@ class dump_react_comment:
             except Exception as e: continue
         try:
             for s in id:
-                if (re.findall("[a-zA-Z]",str(s))) : io = group_to_id(s)
-                else : io = s
+                io = group_to_id(s) if (re.findall("[a-zA-Z]",str(s))) else s
                 self.requ1_G(io)
         except KeyboardInterrupt: pass
         if len(self.dump) == 0: print('\rDump ID Gagal')
         else: print('\rBerhasil Mendapat %s ID'%(str(len(self.dump))))
     def cek_G(self,id):
         try:
-            req = self.xyz.get('https://graph.facebook.com/%s?access_token=%s'%(id,self.token_eaag),cookies=self.cookie).json()
+            req = self.xyz.get(
+                f'https://graph.facebook.com/{id}?access_token={self.token_eaag}',
+                cookies=self.cookie,
+            ).json()
             if req['privacy'] == 'OPEN':
                 try:
-                    raq = bs(self.xyz.get('https://mbasic.facebook.com/groups/%s?view=info'%(id),cookies=self.cookie).content,'html.parser')
+                    raq = bs(
+                        self.xyz.get(
+                            f'https://mbasic.facebook.com/groups/{id}?view=info',
+                            cookies=self.cookie,
+                        ).content,
+                        'html.parser',
+                    )
                     agt = str([c.text for c in raq.find_all('tr') if 'Anggota' in str(c)][0].replace('Anggota',''))
-                    pos = [x['id'] for x in self.xyz.get('https://graph.facebook.com/%s/feed?fields=id&limit=%s&access_token=%s'%(id,self.limit,self.token_eaag),cookies=self.cookie).json()['data']]
+                    pos = [
+                        x['id']
+                        for x in self.xyz.get(
+                            f'https://graph.facebook.com/{id}/feed?fields=id&limit={self.limit}&access_token={self.token_eaag}',
+                            cookies=self.cookie,
+                        ).json()['data']
+                    ]
                 except Exception as e: pass
-                print(' • %s --> %s Members & %s Posts'%(str(req['name']),agt,str(len(pos))))
+                print(f" • {str(req['name'])} --> {agt} Members & {len(pos)} Posts")
             else:
-                print(' • %s --> Kesalahan/Private'%(id))
+                print(f' • {id} --> Kesalahan/Private')
                 self.fail.append(id)
         except Exception as e:
-            print(' • %s --> Kesalahan/Private'%(id))
+            print(f' • {id} --> Kesalahan/Private')
             self.fail.append(id)
     def requ1_G(self,id):
-        lisz  = [x['id'] for x in self.xyz.get('https://graph.facebook.com/%s/feed?fields=id&limit=%s&access_token=%s'%(id,self.limit,self.token_eaag),cookies=self.cookie).json()['data']]
+        lisz = [
+            x['id']
+            for x in self.xyz.get(
+                f'https://graph.facebook.com/{id}/feed?fields=id&limit={self.limit}&access_token={self.token_eaag}',
+                cookies=self.cookie,
+            ).json()['data']
+        ]
         try:
             for pid in lisz:
                 if self.modul == 'K':
-                    url = 'https://mbasic.facebook.com/' + pid
+                    url = f'https://mbasic.facebook.com/{pid}'
                     self.main_requ_comment(url)
                 else:
                     self.main_requ_react(pid)
@@ -548,7 +673,7 @@ class dump_react_comment:
         try:
             for pid in id:
                 if self.modul == 'K':
-                    url = 'https://mbasic.facebook.com/' + pid
+                    url = f'https://mbasic.facebook.com/{pid}'
                     self.main_requ_comment(url)
                 else:
                     self.main_requ_react(pid)
@@ -564,11 +689,12 @@ class dump_react_comment:
                 try:
                     v    = x.find('a',href=True)
                     nama = v.text
-                    if 'profile.php' in v['href']: id = re.search('profile.php\?id\=(.*?)\&amp',str(v)).group(1)
+                    if 'profile.php' in v['href']:
+                        id = re.search('profile.php\?id\=(.*?)\&amp',str(v))[1]
                     else: id = user_to_id(v['href'].split('?')[0].replace('/',''))
-                    format = '%s%s%s'%(id,self.pisah,nama)
-                    if format in self.dump:pass
-                    else:self.dump.append(format)
+                    format = f'{id}{self.pisah}{nama}'
+                    if format not in self.dump:
+                        self.dump.append(format)
                     animasi()
                 except Exception as e: continue
             nek = 'https://mbasic.facebook.com' + req.find('a',string=' Lihat komentar sebelumnya…')['href']
@@ -583,9 +709,9 @@ class dump_react_comment:
             for y in req.find_all('a',href=True):
                 try:
                     if '/ufi/reaction/profile/browser/fetch/?ft_ent_identifier' in y['href']:
-                        if 'Semua' in y.text: pass
-                        elif 'reaction_type=0' in str(y): pass
-                        else:
+                        if 'Semua' not in y.text and 'reaction_type=0' not in str(
+                            y
+                        ):
                             lk1 = 'https://mbasic.facebook.com' + y['href'].replace('limit=10','limit=50')
                             self.scrap_react(lk1)
                 except Exception as e: continue
@@ -597,11 +723,12 @@ class dump_react_comment:
                 try:
                     v    = z.find('a',href=True)
                     nama = v.text
-                    if 'profile.php' in v['href']: id = re.search('profile.php\?id\=(.*?)\&amp',str(v)).group(1)
+                    if 'profile.php' in v['href']:
+                        id = re.search('profile.php\?id\=(.*?)\&amp',str(v))[1]
                     else: id = v['href'].split('?')[0].replace('/','')
-                    format = '%s%s%s'%(id,self.pisah,nama)
-                    if format in self.dump:pass
-                    else:self.dump.append(format)
+                    format = f'{id}{self.pisah}{nama}'
+                    if format not in self.dump:
+                        self.dump.append(format)
                     animasi()
                 except Exception as e: continue
             nek = 'https://mbasic.facebook.com' + req.find('a',string='Lihat Selengkapnya')['href'].replace('limit=10','limit=50')
@@ -614,8 +741,7 @@ class dump_react_comment:
         id = input('Masukkan ID Grup : ').split(',')
         print('')
         for f in id:
-            if (re.findall("[a-zA-Z]",str(f))) : io = group_to_id(f)
-            else : io = f
+            io = group_to_id(f) if (re.findall("[a-zA-Z]",str(f))) else f
             self.cek_G(io)
         print('')
         print('Tekan ctrl+c Untuk Berhenti')
@@ -624,12 +750,13 @@ class dump_react_comment:
             except Exception as e: continue
         try:
             for s in id:
-                if (re.findall("[a-zA-Z]",str(s))) : io = group_to_id(s)
-                else : io = s
+                io = group_to_id(s) if (re.findall("[a-zA-Z]",str(s))) else s
                 if self.modul == 'T':
-                    self.scrape_tl('https://mbasic.facebook.com/groups/'+io)
+                    self.scrape_tl(f'https://mbasic.facebook.com/groups/{io}')
                 elif self.modul == 'M':
-                    self.scrape_mb('https://mbasic.facebook.com/browse/group/members/?id=%s&start=0'%(io))
+                    self.scrape_mb(
+                        f'https://mbasic.facebook.com/browse/group/members/?id={io}&start=0'
+                    )
         except KeyboardInterrupt: pass
         if len(self.dump) == 0: print('\rDump ID Gagal')
         else: print('\rBerhasil Mendapat %s ID'%(str(len(self.dump))))
@@ -641,18 +768,20 @@ class dump_react_comment:
             for z in req.find_all('h3'):
                 for po in z.find_all('a',href=True):
                     try:
-                        if 'mbasic.facebook.com' in po['href']:pass
-                        elif 'story.php' in po['href']:pass
-                        elif 'Halaman' in po.text:pass
+                        if (
+                            'mbasic.facebook.com' in po['href']
+                            or 'story.php' in po['href']
+                            or 'Halaman' in po.text
+                        ):pass
                         elif 'profile.php' in po['href']:
                             id = re.findall('profile\.php\?id=(.*?)&',str(po['href']))[0]
                             nm = po.text
                         else:
                             id = user_to_id(re.findall('\/(.*?)\/\?refid',str(po['href']))[0])
                             nm = po.text
-                        format = '%s%s%s'%(id,self.pisah,nm)
-                        if format in self.dump:pass
-                        else:self.dump.append(format)
+                        format = f'{id}{self.pisah}{nm}'
+                        if format not in self.dump:
+                            self.dump.append(format)
                         animasi()
                     except Exception as e: continue
             nek = 'https://mbasic.facebook.com' + req.find('a',string='Lihat Postingan Lainnya')['href']
@@ -673,9 +802,9 @@ class dump_react_comment:
                         else:
                             id = user_to_id(re.findall('\/(.*?)\/\?refid',str(po['href']))[0])
                             nm = po.text
-                        format = '%s%s%s'%(id,self.pisah,nm)
-                        if format in self.dump:pass
-                        else:self.dump.append(format)
+                        format = f'{id}{self.pisah}{nm}'
+                        if format not in self.dump:
+                            self.dump.append(format)
                         animasi()
                     except Exception as e: continue
             nek = 'https://mbasic.facebook.com' + req.find('a',string='Lihat Selengkapnya')['href']
@@ -714,13 +843,13 @@ class dump_owner_account:
             for p in req.find_all('a',href=True):
                 if '/messages/read/?tid=cid.c' in p['href']:
                     try:
-                        if p.text == 'Pengguna Facebook': continue
-                        else:
-                            id   = str(re.search('%3A(.*?)&',p['href']).group(1))
-                            nama = p.text
-                        format = '%s%s%s'%(id,self.pisah,nama)
-                        if format in self.dump: pass
-                        else: self.dump.append(format)
+                        if p.text == 'Pengguna Facebook':
+                            if p.text == 'Pengguna Facebook': continue
+                        id = str(re.search('%3A(.*?)&',p['href'])[1])
+                        nama = p.text
+                        format = f'{id}{self.pisah}{nama}'
+                        if format not in self.dump:
+                            self.dump.append(format)
                         animasi()
                     except Exception as e: continue
             nek = 'https://mbasic.facebook.com' + req.find('a',string='Lihat Pesan Sebelumnya')['href']
@@ -735,13 +864,12 @@ class dump_owner_account:
         common = ['andi','dwi','muhammad','nur','dewi','tri','dian','sri','putri','eka','sari','aditya','basuki','budi','joni','toni','cahya','riski','farhan','aden','joko']
         for x in id:
             for y in common:
-                lid.append('%s %s'%(x,y))
-                lid.append('%s %s'%(y,x))
+                lid.extend((f'{x} {y}', f'{y} {x}'))
         print('')
         print('Tekan ctrl+c Untuk Berhenti')
         try:
             for z in lid:
-                url = 'https://mbasic.facebook.com/search/people/?q=' + z
+                url = f'https://mbasic.facebook.com/search/people/?q={z}'
                 self.scrape_name(url)
         except KeyboardInterrupt: pass
         if len(self.dump) == 0: print('\rDump ID Gagal')
@@ -754,14 +882,14 @@ class dump_owner_account:
                     if "<img alt=" in str(p):
                         if "home.php" in str(p["href"]): continue
                         elif 'profile.php' in str(p["href"]):
-                            id   = re.search('"/profile\.php\?id=(.*?)&"',str(p)).group(1)
+                            id = re.search('"/profile\.php\?id=(.*?)&"',str(p))[1]
                             nama = p.find("img")['alt'].replace(", profile picture","")
                         elif 'refid' in str(p["href"]):
-                            id   = user_to_id(re.search("/(.*?)\?",str(p)).group(1))
+                            id = user_to_id(re.search("/(.*?)\?",str(p))[1])
                             nama = p.find("img")['alt'].replace(", profile picture","")
-                        format = '%s%s%s'%(id,self.pisah,nama)
-                        if format in self.dump: pass
-                        else: self.dump.append(format)
+                        format = f'{id}{self.pisah}{nama}'
+                        if format not in self.dump:
+                            self.dump.append(format)
                     animasi()
                 except Exception as e: continue
             nek = req.find('a',string='Lihat Hasil Selanjutnya')['href']
@@ -781,18 +909,20 @@ class dump_owner_account:
             for q in req.find_all('h3'):
                 for p in q.find_all('a',href=True):
                     try:
-                        if 'mbasic.facebook.com' in p['href']:pass
-                        elif 'sub_view' in p['href']:pass
-                        elif '/?' in p['href']:pass
+                        if (
+                            'mbasic.facebook.com' in p['href']
+                            or 'sub_view' in p['href']
+                            or '/?' in p['href']
+                        ):pass
                         elif 'profile.php' in str(p["href"]):
-                            id   = str(re.search('\?id=(.*?)&',p['href']).group(1))
-                            nama = str(re.search('>(.*?)<\/a>',str(p)).group(1))
+                            id = str(re.search('\?id=(.*?)&',p['href'])[1])
+                            nama = str(re.search('>(.*?)<\/a>',str(p))[1])
                         else:
-                            id   = user_to_id(str(re.search('\/(.*?)\?',p['href']).group(1)))
-                            nama = str(re.search('>(.*?)<\/a>',str(p)).group(1))
-                        format = '%s%s%s'%(id,self.pisah,nama)
-                        if format in self.dump: pass
-                        else: self.dump.append(format)
+                            id = user_to_id(str(re.search('\/(.*?)\?',p['href'])[1]))
+                            nama = str(re.search('>(.*?)<\/a>',str(p))[1])
+                        format = f'{id}{self.pisah}{nama}'
+                        if format not in self.dump:
+                            self.dump.append(format)
                         animasi()
                     except Exception as e: continue
             nek = 'https://mbasic.facebook.com' + req.find('a',string='Lihat Berita Lain')['href']
@@ -807,7 +937,7 @@ class dump_owner_account:
         print('Tekan ctrl+c Untuk Berhenti')
         try:
             for z in id:
-                url = 'https://mbasic.facebook.com/hashtag/' + z
+                url = f'https://mbasic.facebook.com/hashtag/{z}'
                 self.scrape_hashtag(url)
         except KeyboardInterrupt: pass
         if len(self.dump) == 0: print('\rDump ID Gagal')
@@ -818,18 +948,20 @@ class dump_owner_account:
             for q in req.find_all('h3'):
                 for p in q.find_all('a',href=True):
                     try:
-                        if 'mbasic.facebook.com' in p['href']:pass
-                        elif 'sub_view' in p['href']:pass
-                        elif '/?' in p['href']:pass
+                        if (
+                            'mbasic.facebook.com' in p['href']
+                            or 'sub_view' in p['href']
+                            or '/?' in p['href']
+                        ):pass
                         elif 'profile.php' in str(p["href"]):
-                            id   = str(re.search('\?id=(.*?)&',p['href']).group(1))
-                            nama = str(re.search('>(.*?)<\/a>',str(p)).group(1))
+                            id = str(re.search('\?id=(.*?)&',p['href'])[1])
+                            nama = str(re.search('>(.*?)<\/a>',str(p))[1])
                         else:
-                            id   = user_to_id(str(re.search('\/(.*?)\?',p['href']).group(1)))
-                            nama = str(re.search('>(.*?)<\/a>',str(p)).group(1))
-                        format = '%s%s%s'%(id,self.pisah,nama)
-                        if format in self.dump: pass
-                        else: self.dump.append(format)
+                            id = user_to_id(str(re.search('\/(.*?)\?',p['href'])[1]))
+                            nama = str(re.search('>(.*?)<\/a>',str(p))[1])
+                        format = f'{id}{self.pisah}{nama}'
+                        if format not in self.dump:
+                            self.dump.append(format)
                         animasi()
                     except Exception as e: continue
             nek = req.find('a',string='Lihat Hasil Selanjutnya')['href']
@@ -851,9 +983,9 @@ class dump_owner_account:
                     if "friends/hovercard/mbasic" in str(p['href']):
                         id   = p['href'].split('&')[0].split('=')[1]
                         nama = p.text
-                    format = '%s%s%s'%(id,self.pisah,nama)
-                    if format in self.dump: pass
-                    else: self.dump.append(format)
+                    format = f'{id}{self.pisah}{nama}'
+                    if format not in self.dump:
+                        self.dump.append(format)
                     animasi()
                 except Exception as e: pass
             nek = 'https://mbasic.facebook.com' + req.find('a',string='Lihat selengkapnya')['href']
@@ -908,7 +1040,7 @@ class dump_random:
         for n in r:
             self.cek_id(n)
     def cek_id(self,id):
-        url = 'https://mbasic.facebook.com/login/device-based/password/?uid=%s&flow=login_no_pin&refsrc=deprecated&_rdr'%(id)
+        url = f'https://mbasic.facebook.com/login/device-based/password/?uid={id}&flow=login_no_pin&refsrc=deprecated&_rdr'
         try:
             req = bs(self.xyz.get(url).content,'html.parser')
             if "Sorry, this content isn't available right now" in req: pass
@@ -916,10 +1048,8 @@ class dump_random:
                 print('\rAkunmu Kena Spam',end=''); sys.stdout.flush()
             else:
                 nama = req.find_all('img')[1]['alt'].split(',')[0]
-                if nama == 'Foto Profil Pengguna': pass
-                elif nama == '': pass
-                else:
-                    format = '%s%s%s'%(id,self.pisah,nama)
+                if nama not in ['Foto Profil Pengguna', '']:
+                    format = f'{id}{self.pisah}{nama}'
                     self.dump.append(format)
                     animasi()
         except Exception as e: pass
@@ -932,7 +1062,6 @@ class simpan_file:
         print('')
         ty = input('Simpan File? [y/t] : ').lower()
         if ty in ['1','01','y','ya','iya']: self.main2()
-        else: pass
     def main2(self):
         try:os.mkdir('dump')
         except:pass
@@ -947,12 +1076,12 @@ class simpan_file:
             print('\nFile Dump Tersimpan Di %s'%(lok))
         except Exception as e:
             print('\nGagal Menemukan Lokasi File')
-            lok = 'dump/%s.txt'%(tanggal)
+            lok = f'dump/{tanggal}.txt'
             open(lok,'a+')
             for d in dump:
                 try: open(lok,'a+').write(d+'\n')
                 except Exception as e: pass
-            print('File Dump Tersimpan Di %s'%(lok))
+            print(f'File Dump Tersimpan Di {lok}')
 
 #--> Warning
 def belum_bisa():
